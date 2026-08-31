@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10241d">
+
+  <title>FC Classe — Espace professeur</title>
+
+  <meta
+    name="description"
+    content="Espace professeur de FC Classe : gestion des mérites, des openings et de la classe."
+  >
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/prof.css">
+
+  <script src="js/config.js" defer></script>
+  <script src="js/mock-data.js" defer></script>
+  <script src="js/api.js" defer></script>
+  <script src="js/prof.js" defer></script>
+</head>
+
+<body class="page-teacher">
+
+  <header class="site-header">
+    <a
+      class="brand"
+      href="index.html"
+      aria-label="FC Classe — Accueil"
+    >
+      <span class="brand-mark" aria-hidden="true">
+        FC
+      </span>
+
+      <span class="brand-text">
+        <strong>FC Classe</strong>
+        <small>Espace professeur</small>
+      </span>
+    </a>
+
+    <a
+      class="teacher-link"
+      href="index.html"
+    >
+      <span aria-hidden="true">←</span>
+      Retour au site
+    </a>
+  </header>
+
+
+  <main>
+
+    <!-- ===================================================
+         CONNEXION PROFESSEUR
+         =================================================== -->
+
+    <section
+      id="teacher-login-section"
+      class="teacher-login-section"
+    >
+
+      <div class="teacher-login-card">
+
+        <div class="teacher-login-icon">
+          🔒
+        </div>
+
+        <p class="eyebrow">
+          Accès réservé
+        </p>
+
+        <h1>
+          Espace professeur
+        </h1>
+
+        <p class="teacher-login-intro">
+          Connecte-toi pour gérer les mérites,
+          les élèves et lancer les openings.
+        </p>
+
+
+        <form
+          id="teacher-login-form"
+          class="teacher-login-form"
+        >
+
+          <label
+            for="teacher-password"
+            class="teacher-form-label"
+          >
+            Mot de passe
+          </label>
+
+          <div class="teacher-password-field">
+
+            <input
+              id="teacher-password"
+              class="form-control"
+              type="password"
+              placeholder="Mot de passe professeur"
+              autocomplete="current-password"
+              required
+            >
+
+            <button
+              id="toggle-teacher-password"
+              class="password-toggle"
+              type="button"
+              aria-label="Afficher le mot de passe"
+            >
+              👁
+            </button>
+
+          </div>
+
+
+          <button
+            id="teacher-login-button"
+            class="button button-primary teacher-login-button"
+            type="submit"
+          >
+            Se connecter
+          </button>
+
+
+          <p
+            id="teacher-login-error"
+            class="teacher-login-error"
+            aria-live="polite"
+          ></p>
+
+        </form>
+
+
+        <p class="teacher-login-note">
+          En mode démonstration, le mot de passe temporaire est
+          <strong>prof</strong>.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         DASHBOARD PROFESSEUR
+         =================================================== -->
+
+    <div
+      id="teacher-dashboard"
+      class="teacher-dashboard"
+      hidden
+    >
+
+      <!-- =================================================
+           HEADER DASHBOARD
+           ================================================= -->
+
+      <section class="teacher-dashboard-hero">
+
+        <div>
+
+          <p class="eyebrow">
+            Tableau de bord
+          </p>
+
+          <h1>
+            Gestion de la classe
+          </h1>
+
+          <p class="teacher-dashboard-intro">
+            Mets à jour les mérites et lance les openings
+            disponibles.
+          </p>
+
+        </div>
+
+
+        <div class="teacher-dashboard-actions">
+
+          <button
+            id="teacher-refresh"
+            class="button button-secondary"
+            type="button"
+          >
+            ↻ Actualiser
+          </button>
+
+          <button
+            id="teacher-logout"
+            class="button button-secondary"
+            type="button"
+          >
+            Déconnexion
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           STATS
+           ================================================= -->
+
+      <section class="teacher-overview">
+
+        <article class="teacher-overview-card">
+
+          <span class="teacher-overview-label">
+            Élèves
+          </span>
+
+          <strong
+            id="teacher-stat-students"
+          >
+            0
+          </strong>
+
+        </article>
+
+
+        <article class="teacher-overview-card">
+
+          <span class="teacher-overview-label">
+            Joueurs attribués
+          </span>
+
+          <strong
+            id="teacher-stat-assigned"
+          >
+            0
+          </strong>
+
+        </article>
+
+
+        <article class="teacher-overview-card">
+
+          <span class="teacher-overview-label">
+            Joueurs disponibles
+          </span>
+
+          <strong
+            id="teacher-stat-available"
+          >
+            0
+          </strong>
+
+        </article>
+
+
+        <article class="teacher-overview-card">
+
+          <span class="teacher-overview-label">
+            Openings effectués
+          </span>
+
+          <strong
+            id="teacher-stat-openings"
+          >
+            0
+          </strong>
+
+        </article>
+
+      </section>
+
+
+      <!-- =================================================
+           RÉGLAGE DU SEUIL
+           ================================================= -->
+
+      <section class="teacher-panel">
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              Réglage
+            </p>
+
+            <h2>
+              Mérites par opening
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <div class="threshold-setting">
+
+          <div>
+
+            <p class="threshold-setting-intro">
+              Les mérites sont cumulés et ne descendent jamais.
+              Ce nombre définit le palier nécessaire pour gagner
+              un nouvel opening.
+            </p>
+
+          </div>
+
+
+          <form
+            id="threshold-form"
+            class="threshold-form"
+          >
+
+            <label
+              for="teacher-threshold"
+              class="visually-hidden"
+            >
+              Mérites par opening
+            </label>
+
+            <input
+              id="teacher-threshold"
+              class="form-control"
+              type="number"
+              min="1"
+              step="1"
+              value="10"
+            >
+
+            <button
+              class="button button-primary"
+              type="submit"
+            >
+              Enregistrer
+            </button>
+
+          </form>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           LISTE DES ÉLÈVES
+           ================================================= -->
+
+      <section class="teacher-panel">
+
+        <div class="section-heading teacher-student-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              La classe
+            </p>
+
+            <h2>
+              Élèves et mérites
+            </h2>
+
+          </div>
+
+
+          <div class="teacher-student-tools">
+
+            <label
+              class="teacher-search"
+              for="teacher-student-search"
+            >
+
+              <span aria-hidden="true">
+                ⌕
+              </span>
+
+              <input
+                id="teacher-student-search"
+                type="search"
+                placeholder="Chercher un élève..."
+                autocomplete="off"
+              >
+
+            </label>
+
+
+            <button
+              id="open-add-student"
+              class="button button-secondary"
+              type="button"
+            >
+              + Ajouter un élève
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="teacher-students-loading"
+          class="loading"
+          hidden
+        >
+          Chargement des élèves
+        </div>
+
+
+        <div
+          id="teacher-students-empty"
+          class="empty-state"
+          hidden
+        >
+          Aucun élève à afficher.
+        </div>
+
+
+        <div
+          id="teacher-students-list"
+          class="teacher-students-list"
+        ></div>
+
+      </section>
+
+
+      <!-- =================================================
+           INFORMATIONS
+           ================================================= -->
+
+      <section class="teacher-panel teacher-info-panel">
+
+        <div>
+
+          <p class="eyebrow">
+            Rappel
+          </p>
+
+          <h2>
+            Fonctionnement des openings
+          </h2>
+
+        </div>
+
+
+        <div class="teacher-info-grid">
+
+          <article>
+
+            <span>
+              01
+            </span>
+
+            <strong>
+              Saisis les mérites
+            </strong>
+
+            <p>
+              Tu entres directement le total actuel de l'élève.
+            </p>
+
+          </article>
+
+
+          <article>
+
+            <span>
+              02
+            </span>
+
+            <strong>
+              Le site calcule
+            </strong>
+
+            <p>
+              Il compare les mérites aux openings déjà réalisés.
+            </p>
+
+          </article>
+
+
+          <article>
+
+            <span>
+              03
+            </span>
+
+            <strong>
+              Lance le tirage
+            </strong>
+
+            <p>
+              Si un opening est disponible, le bouton devient actif.
+            </p>
+
+          </article>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+
+  <!-- =====================================================
+       MODALE AJOUT ÉLÈVE
+       ===================================================== -->
+
+  <div
+    id="add-student-modal"
+    class="teacher-modal"
+    hidden
+  >
+
+    <button
+      id="add-student-backdrop"
+      class="teacher-modal-backdrop"
+      type="button"
+      aria-label="Fermer"
+    ></button>
+
+
+    <article
+      class="teacher-modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-student-title"
+    >
+
+      <button
+        id="close-add-student"
+        class="teacher-modal-close"
+        type="button"
+        aria-label="Fermer"
+      >
+        ×
+      </button>
+
+
+      <p class="eyebrow">
+        Nouvelle entrée
+      </p>
+
+      <h2 id="add-student-title">
+        Ajouter un élève
+      </h2>
+
+
+      <form
+        id="add-student-form"
+        class="add-student-form"
+      >
+
+        <label
+          for="new-student-name"
+          class="teacher-form-label"
+        >
+          Prénom et nom
+        </label>
+
+        <input
+          id="new-student-name"
+          class="form-control"
+          type="text"
+          placeholder="Ex. Lucas Martin"
+          autocomplete="off"
+          required
+        >
+
+
+        <button
+          class="button button-primary"
+          type="submit"
+        >
+          Ajouter l'élève
+        </button>
+
+
+        <p
+          id="add-student-error"
+          class="teacher-form-error"
+          aria-live="polite"
+        ></p>
+
+      </form>
+
+    </article>
+
+  </div>
+
+
+  <!-- =====================================================
+       MODALE CONFIRMATION OPENING
+       ===================================================== -->
+
+  <div
+    id="opening-confirm-modal"
+    class="teacher-modal"
+    hidden
+  >
+
+    <button
+      id="opening-confirm-backdrop"
+      class="teacher-modal-backdrop"
+      type="button"
+      aria-label="Fermer"
+    ></button>
+
+
+    <article
+      class="teacher-modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="opening-confirm-title"
+    >
+
+      <button
+        id="opening-confirm-close"
+        class="teacher-modal-close"
+        type="button"
+        aria-label="Fermer"
+      >
+        ×
+      </button>
+
+
+      <p class="eyebrow">
+        Opening disponible
+      </p>
+
+
+      <h2 id="opening-confirm-title">
+        Lancer le tirage ?
+      </h2>
+
+
+      <p
+        id="opening-confirm-text"
+        class="opening-confirm-text"
+      >
+        Cet élève possède un opening disponible.
+      </p>
+
+
+      <div class="opening-confirm-actions">
+
+        <button
+          id="opening-confirm-cancel"
+          class="button button-secondary"
+          type="button"
+        >
+          Annuler
+        </button>
+
+        <button
+          id="opening-confirm-start"
+          class="button button-primary"
+          type="button"
+        >
+          Lancer l'opening
+        </button>
+
+      </div>
+
+    </article>
+
+  </div>
+
+
+  <!-- =====================================================
+       TOAST
+       ===================================================== -->
+
+  <div
+    id="teacher-toast"
+    class="teacher-toast"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+
+  <!-- =====================================================
+       FOOTER
+       ===================================================== -->
+
+  <footer class="site-footer">
+
+    <p>
+      FC Classe · Espace professeur
+    </p>
+
+    <p class="footer-note">
+      Les modifications seront enregistrées automatiquement.
+    </p>
+
+  </footer>
+
+</body>
+</html>
