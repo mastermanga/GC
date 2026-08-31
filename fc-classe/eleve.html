@@ -1,1 +1,628 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10241d">
 
+  <title>FC Classe — Équipe</title>
+
+  <meta
+    name="description"
+    content="Découvre l'équipe et la collection d'un élève sur FC Classe."
+  >
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/eleve.css">
+
+  <script src="js/config.js" defer></script>
+  <script src="js/mock-data.js" defer></script>
+  <script src="js/api.js" defer></script>
+  <script src="js/pitch.js" defer></script>
+  <script src="js/eleve.js" defer></script>
+</head>
+
+<body class="page-student">
+
+  <header class="site-header">
+    <a
+      class="brand"
+      href="index.html"
+      aria-label="FC Classe — Accueil"
+    >
+      <span class="brand-mark" aria-hidden="true">
+        FC
+      </span>
+
+      <span class="brand-text">
+        <strong>FC Classe</strong>
+        <small>Collection de la classe</small>
+      </span>
+    </a>
+
+    <a
+      class="teacher-link"
+      href="index.html"
+    >
+      <span aria-hidden="true">←</span>
+      Retour
+    </a>
+  </header>
+
+
+  <main>
+
+    <!-- ===================================================
+         CHARGEMENT
+         =================================================== -->
+
+    <section
+      id="student-loading"
+      class="student-loading"
+    >
+      <div class="loading">
+        Chargement de l'équipe
+      </div>
+    </section>
+
+
+    <!-- ===================================================
+         ERREUR
+         =================================================== -->
+
+    <section
+      id="student-error"
+      class="student-error"
+      hidden
+    >
+      <div class="empty-state">
+        <h1>Équipe introuvable</h1>
+
+        <p id="student-error-message">
+          Impossible de retrouver cet élève.
+        </p>
+
+        <a
+          class="button button-primary"
+          href="index.html"
+        >
+          Retour à la recherche
+        </a>
+      </div>
+    </section>
+
+
+    <!-- ===================================================
+         CONTENU ÉLÈVE
+         =================================================== -->
+
+    <div
+      id="student-page"
+      class="student-page"
+      hidden
+    >
+
+      <!-- =================================================
+           HEADER ÉLÈVE
+           ================================================= -->
+
+      <section class="student-hero">
+
+        <div class="student-hero-main">
+
+          <div
+            id="student-avatar"
+            class="student-avatar"
+          >
+            FC
+          </div>
+
+          <div class="student-identity">
+
+            <p class="eyebrow">
+              Équipe de
+            </p>
+
+            <h1 id="student-name">
+              Élève
+            </h1>
+
+            <p class="student-subtitle">
+              Sa collection FC Classe
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="student-stats">
+
+          <article class="student-stat-card">
+
+            <span class="student-stat-label">
+              Mérites
+            </span>
+
+            <strong
+              id="student-merits"
+              class="student-stat-value"
+            >
+              0
+            </strong>
+
+            <span class="student-stat-note">
+              cumulés
+            </span>
+
+          </article>
+
+
+          <article class="student-stat-card">
+
+            <span class="student-stat-label">
+              Joueurs
+            </span>
+
+            <strong
+              id="student-player-count"
+              class="student-stat-value"
+            >
+              0
+            </strong>
+
+            <span class="student-stat-note">
+              dans la collection
+            </span>
+
+          </article>
+
+
+          <article
+            id="student-opening-card"
+            class="student-stat-card student-stat-card-accent"
+          >
+
+            <span class="student-stat-label">
+              Openings disponibles
+            </span>
+
+            <strong
+              id="student-openings-available"
+              class="student-stat-value"
+            >
+              0
+            </strong>
+
+            <span
+              id="student-opening-progress"
+              class="student-stat-note"
+            >
+              0 effectué
+            </span>
+
+          </article>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           TERRAIN
+           ================================================= -->
+
+      <section
+        class="team-section"
+        aria-labelledby="team-title"
+      >
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              Sur le terrain
+            </p>
+
+            <h2 id="team-title">
+              Les meilleurs de l'équipe
+            </h2>
+
+          </div>
+
+
+          <p
+            id="pitch-description"
+            class="team-section-note"
+          >
+            Placement automatique selon les postes.
+          </p>
+
+        </div>
+
+
+        <div class="pitch-wrapper">
+
+          <div
+            id="football-pitch"
+            class="football-pitch"
+          >
+
+            <!-- lignes du terrain -->
+
+            <div
+              class="pitch-half-line"
+              aria-hidden="true"
+            ></div>
+
+            <div
+              class="pitch-center-circle"
+              aria-hidden="true"
+            ></div>
+
+            <div
+              class="pitch-center-dot"
+              aria-hidden="true"
+            ></div>
+
+            <div
+              class="pitch-box pitch-box-top"
+              aria-hidden="true"
+            ></div>
+
+            <div
+              class="pitch-box pitch-box-bottom"
+              aria-hidden="true"
+            ></div>
+
+            <div
+              class="pitch-goal pitch-goal-top"
+              aria-hidden="true"
+            ></div>
+
+            <div
+              class="pitch-goal pitch-goal-bottom"
+              aria-hidden="true"
+            ></div>
+
+
+            <!-- joueurs injectés par pitch.js -->
+
+            <div
+              id="pitch-players"
+              class="pitch-players"
+            ></div>
+
+
+            <!-- état collection vide -->
+
+            <div
+              id="pitch-empty"
+              class="pitch-empty"
+              hidden
+            >
+
+              <div class="pitch-empty-icon">
+                ⚽
+              </div>
+
+              <strong>
+                Aucun joueur pour le moment
+              </strong>
+
+              <span>
+                Les joueurs gagnés apparaîtront ici.
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           COLLECTION COMPLÈTE
+           ================================================= -->
+
+      <section
+        class="collection-section"
+        aria-labelledby="collection-title"
+      >
+
+        <div class="section-heading">
+
+          <div>
+
+            <p class="eyebrow">
+              La collection
+            </p>
+
+            <h2 id="collection-title">
+              Tous les joueurs
+            </h2>
+
+          </div>
+
+
+          <div
+            id="collection-count"
+            class="badge badge-soft"
+          >
+            0 joueur
+          </div>
+
+        </div>
+
+
+        <div
+          id="collection-grid"
+          class="collection-grid"
+        ></div>
+
+
+        <div
+          id="collection-empty"
+          class="empty-state"
+          hidden
+        >
+
+          <h3>
+            La collection est encore vide
+          </h3>
+
+          <p>
+            Les prochains joueurs gagnés apparaîtront ici.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           INFOS OPENINGS
+           ================================================= -->
+
+      <section
+        class="student-progress-section"
+        aria-labelledby="progress-title"
+      >
+
+        <div class="progress-panel">
+
+          <div>
+
+            <p class="eyebrow">
+              Progression
+            </p>
+
+            <h2 id="progress-title">
+              Openings
+            </h2>
+
+          </div>
+
+
+          <div class="opening-progress-grid">
+
+            <article class="opening-progress-item">
+
+              <span>
+                Gagnés
+              </span>
+
+              <strong
+                id="student-openings-earned"
+              >
+                0
+              </strong>
+
+            </article>
+
+
+            <article class="opening-progress-item">
+
+              <span>
+                Déjà effectués
+              </span>
+
+              <strong
+                id="student-openings-completed"
+              >
+                0
+              </strong>
+
+            </article>
+
+
+            <article class="opening-progress-item opening-progress-highlight">
+
+              <span>
+                Disponibles
+              </span>
+
+              <strong
+                id="student-openings-available-bottom"
+              >
+                0
+              </strong>
+
+            </article>
+
+          </div>
+
+
+          <p
+            id="opening-rule"
+            class="opening-rule"
+          >
+            Un opening est débloqué tous les 10 mérites.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- =================================================
+           NAVIGATION
+           ================================================= -->
+
+      <section class="student-bottom-actions">
+
+        <a
+          class="button button-secondary"
+          href="index.html"
+        >
+          ← Chercher une autre équipe
+        </a>
+
+      </section>
+
+    </div>
+
+  </main>
+
+
+  <!-- =====================================================
+       MODALE JOUEUR
+       ===================================================== -->
+
+  <div
+    id="player-modal"
+    class="player-modal"
+    hidden
+  >
+
+    <button
+      id="player-modal-backdrop"
+      class="player-modal-backdrop"
+      type="button"
+      aria-label="Fermer"
+    ></button>
+
+
+    <article
+      class="player-modal-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-player-name"
+    >
+
+      <button
+        id="player-modal-close"
+        class="player-modal-close"
+        type="button"
+        aria-label="Fermer la fiche joueur"
+      >
+        ×
+      </button>
+
+
+      <div class="player-modal-visual">
+
+        <img
+          id="modal-player-image"
+          src=""
+          alt=""
+        >
+
+      </div>
+
+
+      <div class="player-modal-content">
+
+        <div class="player-modal-rating-line">
+
+          <strong
+            id="modal-player-rating"
+            class="player-modal-rating"
+          >
+            0
+          </strong>
+
+          <span
+            id="modal-player-position"
+            class="badge badge-dark"
+          >
+            -
+          </span>
+
+        </div>
+
+
+        <h2 id="modal-player-name">
+          Joueur
+        </h2>
+
+
+        <p
+          id="modal-player-club"
+          class="player-modal-club"
+        >
+          Club
+        </p>
+
+
+        <div class="player-modal-details">
+
+          <div>
+
+            <span>
+              Nationalité
+            </span>
+
+            <strong
+              id="modal-player-nationality"
+            >
+              -
+            </strong>
+
+          </div>
+
+
+          <div>
+
+            <span>
+              Obtenu le
+            </span>
+
+            <strong
+              id="modal-player-date"
+            >
+              -
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  </div>
+
+
+  <!-- =====================================================
+       FOOTER
+       ===================================================== -->
+
+  <footer class="site-footer">
+
+    <p>
+      FC Classe · Projet de classe
+    </p>
+
+    <p class="footer-note">
+      Chaque joueur est unique dans la classe.
+    </p>
+
+  </footer>
+
+</body>
+</html>
