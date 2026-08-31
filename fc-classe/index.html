@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10241d">
+
+  <title>FC Classe — Trouve ton équipe</title>
+  <meta
+    name="description"
+    content="Retrouve ta collection FC Classe, découvre ton équipe et consulte les vitrines de la classe."
+  >
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/home.css">
+
+  <script src="js/config.js" defer></script>
+  <script src="js/mock-data.js" defer></script>
+  <script src="js/api.js" defer></script>
+  <script src="js/home.js" defer></script>
+</head>
+
+<body class="page-home">
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="FC Classe — Accueil">
+      <span class="brand-mark" aria-hidden="true">FC</span>
+
+      <span class="brand-text">
+        <strong>FC Classe</strong>
+        <small>Collection de la classe</small>
+      </span>
+    </a>
+
+    <a class="teacher-link" href="prof.html">
+      <span aria-hidden="true">🔒</span>
+      Espace professeur
+    </a>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-decoration hero-decoration-left" aria-hidden="true"></div>
+      <div class="hero-decoration hero-decoration-right" aria-hidden="true"></div>
+
+      <div class="hero-content">
+        <p class="eyebrow">Bienvenue dans FC Classe</p>
+
+        <h1 id="hero-title">
+          Trouve ton équipe.
+          <span>Découvre ta collection.</span>
+        </h1>
+
+        <p class="hero-intro">
+          Recherche ton nom pour voir les joueurs que tu as gagnés
+          et retrouver ta sélection sur le terrain.
+        </p>
+
+        <div class="student-search" id="student-search">
+          <label class="search-label" for="student-search-input">
+            Chercher un élève
+          </label>
+
+          <div class="search-box">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+
+            <input
+              id="student-search-input"
+              class="search-input"
+              type="search"
+              placeholder="Ex. Lucas Martin"
+              autocomplete="off"
+              spellcheck="false"
+              aria-controls="student-search-results"
+              aria-expanded="false"
+            >
+
+            <button
+              id="student-search-clear"
+              class="search-clear"
+              type="button"
+              aria-label="Effacer la recherche"
+              hidden
+            >
+              ×
+            </button>
+          </div>
+
+          <div
+            id="student-search-results"
+            class="search-results"
+            role="listbox"
+            aria-label="Résultats de recherche"
+            hidden
+          ></div>
+
+          <p id="student-search-status" class="search-status" aria-live="polite"></p>
+        </div>
+
+        <div class="hero-actions">
+          <button id="show-all-students" class="button button-secondary" type="button">
+            Voir les équipes de la classe
+          </button>
+        </div>
+      </div>
+
+      <div class="mini-pitch" aria-hidden="true">
+        <div class="mini-pitch-circle"></div>
+        <div class="mini-player mini-player-1">9</div>
+        <div class="mini-player mini-player-2">10</div>
+        <div class="mini-player mini-player-3">7</div>
+        <div class="mini-player mini-player-4">8</div>
+        <div class="mini-player mini-player-5">6</div>
+      </div>
+    </section>
+
+    <section class="class-showcase" id="class-showcase" aria-labelledby="showcase-title" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Les équipes</p>
+          <h2 id="showcase-title">Vitrines de la classe</h2>
+        </div>
+
+        <button id="hide-all-students" class="text-button" type="button">
+          Fermer
+        </button>
+      </div>
+
+      <div id="student-grid" class="student-grid"></div>
+    </section>
+
+    <section class="how-it-works" aria-labelledby="how-title">
+      <div class="section-heading section-heading-centered">
+        <div>
+          <p class="eyebrow">Comment ça marche ?</p>
+          <h2 id="how-title">Des mérites aux joueurs</h2>
+        </div>
+      </div>
+
+      <div class="steps-grid">
+        <article class="step-card">
+          <span class="step-number">01</span>
+          <h3>Gagne des mérites</h3>
+          <p>
+            Tes mérites progressent au fil de l'année et ne sont jamais dépensés.
+          </p>
+        </article>
+
+        <article class="step-card">
+          <span class="step-number">02</span>
+          <h3>Débloque des openings</h3>
+          <p>
+            À chaque palier atteint, un nouvel opening devient disponible.
+          </p>
+        </article>
+
+        <article class="step-card">
+          <span class="step-number">03</span>
+          <h3>Construis ta collection</h3>
+          <p>
+            Chaque joueur tiré est unique dans la classe et rejoint ta vitrine.
+          </p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>FC Classe · Projet de classe</p>
+    <p class="footer-note">Les données affichées sont limitées à la vitrine du jeu.</p>
+  </footer>
+
+  <noscript>
+    <div class="noscript-message">
+      JavaScript doit être activé pour utiliser FC Classe.
+    </div>
+  </noscript>
+</body>
+</html>
