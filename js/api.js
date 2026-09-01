@@ -7,15 +7,38 @@
     throw new Error("FC_CONFIG introuvable.");
   }
 
+
   // =====================================================
   // CONFIG CACHE
   // =====================================================
 
-  const PUBLIC_CACHE_KEY = "bafc_public_cache_v1";
-  const TEACHER_CACHE_KEY = "bafc_teacher_cache_v1";
+  const PUBLIC_CACHE_KEY =
+    "bafc_public_cache_v1";
 
-  const REFRESH_DELAY = 15000; // 15 sec
-  const PROFILE_REFRESH_DELAY = 30000; // 30 sec
+  const TEACHER_CACHE_KEY =
+    "bafc_teacher_cache_v1";
+
+  const REFRESH_DELAY =
+    15000;
+
+  const PROFILE_REFRESH_DELAY =
+    30000;
+
+
+  /*
+   * Très important :
+   *
+   * Sur opening.html, on ne veut AUCUNE
+   * requête de préchargement en arrière-plan.
+   *
+   * Toute la connexion doit être disponible
+   * pour performOpening().
+   */
+  const IS_OPENING_PAGE =
+    /(?:^|\/)opening\.html$/i.test(
+      window.location.pathname
+    );
+
 
   const inflight = {
     students: null,
@@ -31,53 +54,94 @@
   // =====================================================
 
   function clone(data) {
-    return JSON.parse(JSON.stringify(data));
+    return JSON.parse(
+      JSON.stringify(data)
+    );
   }
+
 
   function now() {
     return Date.now();
   }
 
+
   function normalize(value) {
     return String(value || "")
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      )
       .toLowerCase()
       .trim();
   }
 
+
+  /*
+   * Permet de faire une opération après
+   * que l'interface a reçu le résultat.
+   */
+  function defer(callback) {
+    window.setTimeout(() => {
+      try {
+        callback();
+      } catch (error) {
+        console.warn(
+          "Tâche différée Bel Air FC impossible.",
+          error
+        );
+      }
+    }, 0);
+  }
+
+
+  // =====================================================
+  // CACHE PUBLIC
+  // =====================================================
+
   function loadPublicCache() {
     try {
-      return JSON.parse(
-        localStorage.getItem(PUBLIC_CACHE_KEY)
-      ) || {
-        students: null,
-        studentsAt: 0,
+      return (
+        JSON.parse(
+          localStorage.getItem(
+            PUBLIC_CACHE_KEY
+          )
+        ) || {
+          students: null,
+          studentsAt: 0,
 
-        config: null,
-        configAt: 0,
+          config: null,
+          configAt: 0,
 
-        profiles: {},
-        searches: {}
-      };
+          profiles: {},
+          searches: {}
+        }
+      );
+
     } catch (error) {
       return {
         students: null,
         studentsAt: 0,
+
         config: null,
         configAt: 0,
+
         profiles: {},
         searches: {}
       };
     }
   }
 
+
   function savePublicCache() {
     try {
       localStorage.setItem(
         PUBLIC_CACHE_KEY,
-        JSON.stringify(publicCache)
+        JSON.stringify(
+          publicCache
+        )
       );
+
     } catch (error) {
       console.warn(
         "Impossible de sauvegarder le cache public.",
@@ -86,15 +150,25 @@
     }
   }
 
+
+  // =====================================================
+  // CACHE PROF
+  // =====================================================
+
   function loadTeacherCache() {
     try {
-      return JSON.parse(
-        sessionStorage.getItem(TEACHER_CACHE_KEY)
-      ) || {
-        token: null,
-        dashboard: null,
-        dashboardAt: 0
-      };
+      return (
+        JSON.parse(
+          sessionStorage.getItem(
+            TEACHER_CACHE_KEY
+          )
+        ) || {
+          token: null,
+          dashboard: null,
+          dashboardAt: 0
+        }
+      );
+
     } catch (error) {
       return {
         token: null,
@@ -104,12 +178,16 @@
     }
   }
 
+
   function saveTeacherCache() {
     try {
       sessionStorage.setItem(
         TEACHER_CACHE_KEY,
-        JSON.stringify(teacherCache)
+        JSON.stringify(
+          teacherCache
+        )
       );
+
     } catch (error) {
       console.warn(
         "Impossible de sauvegarder le cache prof.",
@@ -118,6 +196,11 @@
     }
   }
 
+
+  // =====================================================
+  // ERREUR DE SYNCHRO
+  // =====================================================
+
   function syncError(error) {
     console.error(
       "Erreur de synchronisation Bel Air FC :",
@@ -125,15 +208,21 @@
     );
 
     window.dispatchEvent(
-      new CustomEvent("bafc-sync-error", {
-        detail: error
-      })
+      new CustomEvent(
+        "bafc-sync-error",
+        {
+          detail: error
+        }
+      )
     );
   }
 
 
-  let publicCache = loadPublicCache();
-  let teacherCache = loadTeacherCache();
+  let publicCache =
+    loadPublicCache();
+
+  let teacherCache =
+    loadTeacherCache();
 
 
   // =====================================================
@@ -145,56 +234,80 @@
     payload = {},
     method = "GET"
   ) {
+
     if (!config.apiBaseUrl) {
       throw new Error(
         "URL Apps Script non configurée."
       );
     }
 
-    const params = new URLSearchParams();
 
-    params.set("action", action);
+    const params =
+      new URLSearchParams();
 
-    Object.entries(payload).forEach(
+
+    params.set(
+      "action",
+      action
+    );
+
+
+    Object.entries(
+      payload
+    ).forEach(
       ([key, value]) => {
+
         if (
           value !== undefined &&
           value !== null
         ) {
-          params.set(key, String(value));
+          params.set(
+            key,
+            String(value)
+          );
         }
+
       }
     );
 
+
     let response;
 
+
     if (method === "POST") {
-      response = await fetch(
-        config.apiBaseUrl,
-        {
-          method: "POST",
-          body: params
-        }
-      );
+
+      response =
+        await fetch(
+          config.apiBaseUrl,
+          {
+            method: "POST",
+            body: params
+          }
+        );
+
     } else {
-      response = await fetch(
-        config.apiBaseUrl +
-        "?" +
-        params.toString(),
-        {
-          method: "GET"
-        }
-      );
+
+      response =
+        await fetch(
+          `${config.apiBaseUrl}?${params.toString()}`,
+          {
+            method: "GET"
+          }
+        );
+
     }
+
 
     if (!response.ok) {
       throw new Error(
-        "Erreur réseau : " +
-        response.status
+        `Erreur réseau : ${response.status}`
       );
     }
 
-    const result = await response.json();
+
+    const result =
+      await response.json();
+
 
     if (!result.ok) {
       throw new Error(
@@ -202,6 +315,7 @@
         "Erreur serveur."
       );
     }
+
 
     return result.data;
   }
@@ -212,44 +326,63 @@
   // =====================================================
 
   async function refreshConfig() {
+
     if (inflight.config) {
       return inflight.config;
     }
+
 
     inflight.config =
       remoteRequest(
         "getPublicConfig"
       )
         .then(data => {
-          publicCache.config = data;
-          publicCache.configAt = now();
+
+          publicCache.config =
+            data;
+
+          publicCache.configAt =
+            now();
 
           savePublicCache();
 
           return data;
         })
         .finally(() => {
-          inflight.config = null;
+
+          inflight.config =
+            null;
+
         });
+
 
     return inflight.config;
   }
 
+
   async function getPublicConfig() {
+
     if (publicCache.config) {
+
       if (
         now() -
         publicCache.configAt >
         REFRESH_DELAY
       ) {
+
         refreshConfig()
-          .catch(syncError);
+          .catch(
+            syncError
+          );
+
       }
+
 
       return clone(
         publicCache.config
       );
     }
+
 
     return clone(
       await refreshConfig()
@@ -262,13 +395,18 @@
   // =====================================================
 
   async function refreshStudents() {
+
     if (inflight.students) {
       return inflight.students;
     }
 
+
     inflight.students =
-      remoteRequest("getStudents")
+      remoteRequest(
+        "getStudents"
+      )
         .then(students => {
+
           publicCache.students =
             students || [];
 
@@ -277,45 +415,73 @@
 
           savePublicCache();
 
-          // Préchargement des collections
-          // en arrière-plan.
-          prefetchProfiles(
-            publicCache.students
-          );
+
+          /*
+           * Jamais pendant un opening.
+           */
+          if (!IS_OPENING_PAGE) {
+
+            prefetchProfiles(
+              publicCache.students
+            );
+
+          }
+
 
           return students;
         })
         .finally(() => {
-          inflight.students = null;
+
+          inflight.students =
+            null;
+
         });
+
 
     return inflight.students;
   }
 
+
   async function getStudents() {
+
     if (publicCache.students) {
+
       if (
         now() -
         publicCache.studentsAt >
         REFRESH_DELAY
       ) {
+
         refreshStudents()
-          .catch(syncError);
+          .catch(
+            syncError
+          );
+
       }
 
-      prefetchProfiles(
-        publicCache.students
-      );
+
+      if (!IS_OPENING_PAGE) {
+
+        prefetchProfiles(
+          publicCache.students
+        );
+
+      }
+
 
       return clone(
         publicCache.students
       );
     }
 
+
     const students =
       await refreshStudents();
 
-    return clone(students);
+
+    return clone(
+      students
+    );
   }
 
 
@@ -323,59 +489,92 @@
   // RECHERCHE
   // =====================================================
 
-  async function searchStudents(query) {
-    const q = normalize(query);
+  async function searchStudents(
+    query
+  ) {
+
+    const q =
+      normalize(
+        query
+      );
+
 
     if (
       q.length <
-      (config.minimumSearchLength || 2)
+      (
+        config.minimumSearchLength ||
+        2
+      )
     ) {
       return [];
     }
 
-    // 1. Recherche instantanée
-    // dans les noms publics déjà chargés.
+
+    /*
+     * Recherche locale instantanée.
+     */
     if (publicCache.students) {
+
       const localResults =
         publicCache.students.filter(
           student =>
             normalize(
               student.name
-            ).includes(q)
+            ).includes(
+              q
+            )
         );
 
-      if (localResults.length) {
-        // Le serveur confirme en arrière-plan,
-        // sans bloquer l'utilisateur.
+
+      if (
+        localResults.length
+      ) {
+
         refreshSearch(
           query,
           q
-        ).catch(syncError);
+        ).catch(
+          syncError
+        );
 
-        return clone(localResults);
+
+        return clone(
+          localResults
+        );
       }
     }
 
-    // 2. Recherche déjà faite auparavant.
+
+    /*
+     * Recherche déjà mise en cache.
+     */
     if (
       publicCache.searches &&
       publicCache.searches[q]
     ) {
+
       const cached =
         publicCache.searches[q];
+
 
       refreshSearch(
         query,
         q
-      ).catch(syncError);
+      ).catch(
+        syncError
+      );
+
 
       return clone(
         cached.data || []
       );
     }
 
-    // 3. Seulement si on n'a vraiment
-    // rien localement, on attend Google.
+
+    /*
+     * Rien localement :
+     * Google est nécessaire.
+     */
     return clone(
       await refreshSearch(
         query,
@@ -384,19 +583,23 @@
     );
   }
 
+
   async function refreshSearch(
     query,
     normalizedQuery
   ) {
+
     if (
       inflight.searches[
         normalizedQuery
       ]
     ) {
+
       return inflight.searches[
         normalizedQuery
       ];
     }
+
 
     inflight.searches[
       normalizedQuery
@@ -408,26 +611,40 @@
         }
       )
         .then(results => {
-          if (!publicCache.searches) {
-            publicCache.searches = {};
+
+          if (
+            !publicCache.searches
+          ) {
+            publicCache.searches =
+              {};
           }
+
 
           publicCache.searches[
             normalizedQuery
           ] = {
-            data: results || [],
-            at: now()
+            data:
+              results || [],
+            at:
+              now()
           };
+
 
           savePublicCache();
 
-          return results || [];
+
+          return (
+            results || []
+          );
         })
         .finally(() => {
+
           delete inflight.searches[
             normalizedQuery
           ];
+
         });
+
 
     return inflight.searches[
       normalizedQuery
@@ -442,15 +659,18 @@
   async function refreshProfile(
     studentId
   ) {
+
     if (
       inflight.profiles[
         studentId
       ]
     ) {
+
       return inflight.profiles[
         studentId
       ];
     }
+
 
     inflight.profiles[
       studentId
@@ -458,60 +678,86 @@
       remoteRequest(
         "getStudent",
         {
-          studentId: studentId
+          studentId:
+            studentId
         }
       )
         .then(profile => {
-          if (!publicCache.profiles) {
-            publicCache.profiles = {};
+
+          if (
+            !publicCache.profiles
+          ) {
+            publicCache.profiles =
+              {};
           }
+
 
           publicCache.profiles[
             studentId
           ] = {
-            data: profile,
-            at: now()
+            data:
+              profile,
+            at:
+              now()
           };
 
+
           savePublicCache();
+
 
           return profile;
         })
         .finally(() => {
+
           delete inflight.profiles[
             studentId
           ];
+
         });
+
 
     return inflight.profiles[
       studentId
     ];
   }
 
+
   async function getStudent(
     studentId
   ) {
+
     const cached =
       publicCache.profiles &&
       publicCache.profiles[
         studentId
       ];
 
-    if (cached && cached.data) {
+
+    if (
+      cached &&
+      cached.data
+    ) {
+
       if (
         now() -
         cached.at >
         PROFILE_REFRESH_DELAY
       ) {
+
         refreshProfile(
           studentId
-        ).catch(syncError);
+        ).catch(
+          syncError
+        );
+
       }
+
 
       return clone(
         cached.data
       );
     }
+
 
     return clone(
       await refreshProfile(
@@ -522,62 +768,98 @@
 
 
   // =====================================================
-  // PRÉCHARGEMENT DES PROFILS
+  // PRÉCHARGEMENT PROFILS
   // =====================================================
 
   async function prefetchProfiles(
     students
   ) {
-    if (!Array.isArray(students)) {
+
+    /*
+     * Priorité absolue au tirage.
+     */
+    if (IS_OPENING_PAGE) {
       return;
     }
 
+
+    if (
+      !Array.isArray(
+        students
+      )
+    ) {
+      return;
+    }
+
+
     const missing =
-      students.filter(student => {
-        const cached =
-          publicCache.profiles &&
-          publicCache.profiles[
-            student.id
-          ];
+      students.filter(
+        student => {
 
-        if (!cached) {
-          return true;
+          const cached =
+            publicCache.profiles &&
+            publicCache.profiles[
+              student.id
+            ];
+
+
+          if (!cached) {
+            return true;
+          }
+
+
+          return (
+            now() -
+            cached.at >
+            PROFILE_REFRESH_DELAY
+          );
+
         }
+      );
 
-        return (
-          now() -
-          cached.at >
-          PROFILE_REFRESH_DELAY
-        );
-      });
 
-    // On évite de lancer 25 requêtes
-    // exactement en même temps.
-    const concurrency = 4;
-    let cursor = 0;
+    const concurrency =
+      4;
+
+    let cursor =
+      0;
+
 
     async function worker() {
+
       while (
         cursor <
         missing.length
       ) {
+
         const student =
-          missing[cursor++];
+          missing[
+            cursor++
+          ];
+
 
         try {
+
           await refreshProfile(
             student.id
           );
+
         } catch (error) {
+
           console.warn(
             "Préchargement impossible pour",
             student.id
           );
+
         }
+
       }
     }
 
-    const workers = [];
+
+    const workers =
+      [];
+
 
     for (
       let i = 0;
@@ -587,11 +869,19 @@
       );
       i++
     ) {
-      workers.push(worker());
+
+      workers.push(
+        worker()
+      );
+
     }
 
-    Promise.all(workers)
-      .catch(() => {});
+
+    Promise.all(
+      workers
+    ).catch(
+      () => {}
+    );
   }
 
 
@@ -602,22 +892,32 @@
   async function teacherLogin(
     password
   ) {
+
     const result =
       await remoteRequest(
         "teacherLogin",
         {
-          password: password
+          password:
+            password
         },
         "POST"
       );
 
+
     teacherCache = {
-      token: result.token,
-      dashboard: null,
-      dashboardAt: 0
+      token:
+        result.token,
+
+      dashboard:
+        null,
+
+      dashboardAt:
+        0
     };
 
+
     saveTeacherCache();
+
 
     return result;
   }
@@ -630,18 +930,24 @@
   async function refreshDashboard(
     token
   ) {
-    if (inflight.dashboard) {
+
+    if (
+      inflight.dashboard
+    ) {
       return inflight.dashboard;
     }
+
 
     inflight.dashboard =
       remoteRequest(
         "getTeacherDashboard",
         {
-          token: token
+          token:
+            token
         }
       )
         .then(data => {
+
           teacherCache.token =
             token;
 
@@ -651,72 +957,99 @@
           teacherCache.dashboardAt =
             now();
 
+
           saveTeacherCache();
 
-          // Met également à jour
-          // les infos publiques.
+
+          /*
+           * Mise à jour cache public.
+           */
           if (
             data &&
             Array.isArray(
               data.students
             )
           ) {
+
             publicCache.students =
               data.students
                 .filter(
                   student =>
                     student.active
                 )
-                .map(student => ({
-                  id: student.id,
-                  name:
-                    student.publicName ||
-                    student.name,
-                  merits:
-                    student.merits,
-                  active:
-                    student.active,
-                  openings:
-                    student.openings
-                }));
+                .map(
+                  student => ({
+                    id:
+                      student.id,
+
+                    name:
+                      student.publicName ||
+                      student.name,
+
+                    merits:
+                      student.merits,
+
+                    active:
+                      student.active,
+
+                    openings:
+                      student.openings
+                  })
+                );
+
 
             publicCache.studentsAt =
               now();
 
+
             savePublicCache();
           }
+
 
           return data;
         })
         .finally(() => {
-          inflight.dashboard = null;
+
+          inflight.dashboard =
+            null;
+
         });
+
 
     return inflight.dashboard;
   }
 
+
   async function getTeacherDashboard(
     token
   ) {
+
     if (
       teacherCache.token ===
         token &&
       teacherCache.dashboard
     ) {
+
       if (
         now() -
         teacherCache.dashboardAt >
         REFRESH_DELAY
       ) {
+
         refreshDashboard(
           token
-        ).catch(syncError);
+        ).catch(
+          syncError
+        );
+
       }
+
 
       return clone(
         teacherCache.dashboard
       );
     }
+
 
     return clone(
       await refreshDashboard(
@@ -727,7 +1060,7 @@
 
 
   // =====================================================
-  // MÉRITES - OPTIMISTIC UI
+  // MÉRITES — OPTIMISTIC UI
   // =====================================================
 
   async function updateStudentMerits(
@@ -735,24 +1068,32 @@
     studentId,
     merits
   ) {
+
     const value =
       Math.max(
         0,
         Math.floor(
-          Number(merits) || 0
+          Number(
+            merits
+          ) || 0
         )
       );
 
-    let previousValue = null;
 
-    // Mise à jour immédiate
-    // du dashboard local.
+    let previousValue =
+      null;
+
+
+    /*
+     * Mise à jour locale immédiate.
+     */
     if (
       teacherCache.dashboard &&
       Array.isArray(
         teacherCache.dashboard.students
       )
     ) {
+
       const student =
         teacherCache.dashboard.students.find(
           s =>
@@ -760,12 +1101,16 @@
             String(studentId)
         );
 
+
       if (student) {
+
         previousValue =
           student.merits;
 
+
         student.merits =
           value;
+
 
         const threshold =
           Number(
@@ -774,101 +1119,139 @@
               ?.meritsPerOpening
           ) || 10;
 
+
         const completed =
           Number(
             student.openingsCompleted
           ) || 0;
 
+
         const earned =
           Math.floor(
-            value / threshold
+            value /
+            threshold
           );
 
+
         student.openings = {
-          earned: earned,
-          completed: completed,
+          earned:
+            earned,
+
+          completed:
+            completed,
+
           available:
             Math.max(
               0,
               earned -
               completed
             ),
+
           threshold:
             threshold
         };
 
+
         teacherCache.dashboardAt =
           now();
+
 
         saveTeacherCache();
       }
     }
 
-    // Mise à jour cache public.
+
     updateCachedPublicStudent(
       studentId,
       {
-        merits: value
+        merits:
+          value
       }
     );
 
-    // Le frontend reçoit la réponse
-    // immédiatement.
+
     const immediate = {
       studentId:
         studentId,
+
       merits:
         value
     };
 
-    // Sauvegarde Google derrière.
+
+    /*
+     * Sauvegarde serveur derrière.
+     */
     remoteRequest(
       "updateStudentMerits",
       {
-        token: token,
-        studentId: studentId,
-        merits: value
+        token:
+          token,
+
+        studentId:
+          studentId,
+
+        merits:
+          value
       },
       "POST"
     )
       .then(() => {
+
         refreshDashboard(
           token
-        ).catch(() => {});
+        ).catch(
+          () => {}
+        );
+
       })
       .catch(error => {
-        // Rollback si Google échoue.
+
         if (
-          previousValue !== null
+          previousValue !==
+          null
         ) {
+
           updateStudentMeritsLocalOnly(
             studentId,
             previousValue
           );
+
         }
 
-        syncError(error);
+
+        syncError(
+          error
+        );
+
 
         setTimeout(() => {
+
           alert(
             "La modification n'a pas pu être sauvegardée dans Google Sheets."
           );
+
         }, 0);
+
       });
+
 
     return immediate;
   }
+
 
   function updateStudentMeritsLocalOnly(
     studentId,
     merits
   ) {
+
     if (
       teacherCache.dashboard &&
       Array.isArray(
         teacherCache.dashboard.students
       )
     ) {
+
       const student =
         teacherCache.dashboard.students.find(
           s =>
@@ -876,109 +1259,152 @@
             String(studentId)
         );
 
+
       if (student) {
+
         student.merits =
           merits;
 
         saveTeacherCache();
+
       }
     }
+
 
     updateCachedPublicStudent(
       studentId,
       {
-        merits: merits
+        merits:
+          merits
       }
     );
   }
 
 
   // =====================================================
-  // SEUIL MÉRITES - OPTIMISTIC UI
+  // SEUIL MÉRITES
   // =====================================================
 
   async function updateMeritsPerOpening(
     token,
     value
   ) {
+
     const threshold =
       Math.max(
         1,
         Math.floor(
-          Number(value) || 10
+          Number(
+            value
+          ) || 10
         )
       );
+
 
     if (
       teacherCache.dashboard
     ) {
+
       if (
         !teacherCache.dashboard.config
       ) {
+
         teacherCache.dashboard.config =
           {};
+
       }
+
 
       teacherCache.dashboard
         .config
         .meritsPerOpening =
         threshold;
 
+
       recalculateDashboardOpenings(
         threshold
       );
 
+
       saveTeacherCache();
     }
 
-    if (publicCache.config) {
+
+    if (
+      publicCache.config
+    ) {
+
       publicCache.config
         .meritsPerOpening =
         threshold;
 
+
       publicCache.configAt =
         now();
 
+
       savePublicCache();
     }
+
 
     const immediate = {
       meritsPerOpening:
         threshold
     };
 
+
     remoteRequest(
       "updateMeritsPerOpening",
       {
-        token: token,
-        value: threshold
+        token:
+          token,
+
+        value:
+          threshold
       },
       "POST"
     )
       .then(() => {
+
         refreshDashboard(
           token
-        ).catch(() => {});
+        ).catch(
+          () => {}
+        );
+
 
         refreshConfig()
-          .catch(() => {});
+          .catch(
+            () => {}
+          );
+
       })
       .catch(error => {
-        syncError(error);
+
+        syncError(
+          error
+        );
+
 
         setTimeout(() => {
+
           alert(
             "Le nouveau seuil n'a pas pu être sauvegardé."
           );
+
         }, 0);
+
       });
+
 
     return immediate;
   }
 
+
   function recalculateDashboardOpenings(
     threshold
   ) {
+
     if (
       !teacherCache.dashboard ||
       !Array.isArray(
@@ -988,37 +1414,50 @@
       return;
     }
 
+
     teacherCache.dashboard.students
-      .forEach(student => {
-        const merits =
-          Number(
-            student.merits
-          ) || 0;
+      .forEach(
+        student => {
 
-        const completed =
-          Number(
-            student.openingsCompleted
-          ) || 0;
+          const merits =
+            Number(
+              student.merits
+            ) || 0;
 
-        const earned =
-          Math.floor(
-            merits /
-            threshold
-          );
 
-        student.openings = {
-          earned: earned,
-          completed: completed,
-          available:
-            Math.max(
-              0,
-              earned -
-              completed
-            ),
-          threshold:
-            threshold
-        };
-      });
+          const completed =
+            Number(
+              student.openingsCompleted
+            ) || 0;
+
+
+          const earned =
+            Math.floor(
+              merits /
+              threshold
+            );
+
+
+          student.openings = {
+            earned:
+              earned,
+
+            completed:
+              completed,
+
+            available:
+              Math.max(
+                0,
+                earned -
+                completed
+              ),
+
+            threshold:
+              threshold
+          };
+
+        }
+      );
   }
 
 
@@ -1031,27 +1470,34 @@
     name,
     publicName = ""
   ) {
-    // Action rare :
-    // on attend le serveur pour recevoir
-    // le vrai ID E00X.
+
     const result =
       await remoteRequest(
         "createStudent",
         {
-          token: token,
-          name: name,
+          token:
+            token,
+
+          name:
+            name,
+
           publicName:
             publicName
         },
         "POST"
       );
 
+
     await refreshDashboard(
       token
     );
 
+
     refreshStudents()
-      .catch(syncError);
+      .catch(
+        syncError
+      );
+
 
     return result;
   }
@@ -1065,13 +1511,17 @@
     token,
     studentId
   ) {
-    // Disparition immédiate du dashboard.
+
+    /*
+     * Disparition locale immédiate.
+     */
     if (
       teacherCache.dashboard &&
       Array.isArray(
         teacherCache.dashboard.students
       )
     ) {
+
       const student =
         teacherCache.dashboard.students.find(
           s =>
@@ -1079,19 +1529,23 @@
             String(studentId)
         );
 
+
       if (student) {
         student.active =
           false;
       }
 
+
       saveTeacherCache();
     }
+
 
     if (
       Array.isArray(
         publicCache.students
       )
     ) {
+
       publicCache.students =
         publicCache.students.filter(
           student =>
@@ -1099,38 +1553,57 @@
             String(studentId)
         );
 
+
       savePublicCache();
     }
+
 
     const result = {
       studentId:
         studentId,
+
       active:
         false
     };
 
+
     remoteRequest(
       "archiveStudent",
       {
-        token: token,
-        studentId: studentId
+        token:
+          token,
+
+        studentId:
+          studentId
       },
       "POST"
     )
       .then(() => {
+
         refreshDashboard(
           token
-        ).catch(() => {});
+        ).catch(
+          () => {}
+        );
+
       })
       .catch(error => {
-        syncError(error);
+
+        syncError(
+          error
+        );
+
 
         setTimeout(() => {
+
           alert(
             "L'élève n'a pas pu être archivé dans Google Sheets."
           );
+
         }, 0);
+
       });
+
 
     return result;
   }
@@ -1145,8 +1618,11 @@
     studentId,
     packType = "standard"
   ) {
-    // Si le dashboard est déjà chargé,
-    // aucune attente Google.
+
+    /*
+     * Si le dashboard est déjà disponible,
+     * pas de requête Google.
+     */
     if (
       teacherCache.token ===
         token &&
@@ -1155,6 +1631,7 @@
         teacherCache.dashboard.students
       )
     ) {
+
       const student =
         teacherCache.dashboard.students.find(
           s =>
@@ -1162,16 +1639,27 @@
             String(studentId)
         );
 
+
       if (student) {
+
         const stats =
           student.openings || {
-            earned: 0,
-            completed: 0,
-            available: 0,
-            threshold: 10
+            earned:
+              0,
+
+            completed:
+              0,
+
+            available:
+              0,
+
+            threshold:
+              10
           };
 
+
         return {
+
           student: {
             id:
               student.id,
@@ -1187,29 +1675,43 @@
               stats
           },
 
+
           openings:
             stats,
+
 
           stats:
             stats,
 
+
           packType:
             packType,
+
 
           availablePlayers:
             teacherCache.dashboard
               .players
-              ?.available ?? 0
+              ?.available ??
+            0
+
         };
       }
     }
 
+
+    /*
+     * Sinon seulement :
+     * requête serveur.
+     */
     return remoteRequest(
       "getOpeningContext",
       {
-        token: token,
+        token:
+          token,
+
         studentId:
           studentId,
+
         packType:
           packType
       }
@@ -1226,30 +1728,83 @@
     studentId,
     packType = "standard"
   ) {
-    // Ici on DOIT attendre le serveur.
-    // C'est ce qui garantit qu'un même
-    // joueur ne peut jamais être donné
-    // à deux élèves.
+
+    /*
+     * ===================================================
+     * IMPORTANT
+     *
+     * La SEULE attente ici est la réponse réelle
+     * de Google Apps Script.
+     *
+     * Dès que Google renvoie le JSON du joueur,
+     * on rend immédiatement ce joueur à opening.js.
+     *
+     * Aucun localStorage/sessionStorage ne bloque
+     * l'affichage du premier indice.
+     * ===================================================
+     */
+
+
     const result =
       await remoteRequest(
         "performOpening",
         {
-          token: token,
+          token:
+            token,
+
           studentId:
             studentId,
+
           packType:
             packType
         },
         "POST"
       );
 
-    // Mise à jour immédiate du cache prof.
+
+    /*
+     * Cache APRÈS.
+     *
+     * setTimeout(..., 0) signifie :
+     * opening.js récupère d'abord le joueur,
+     * puis on synchronise les caches.
+     */
+    defer(() => {
+
+      applyOpeningResultToCaches(
+        studentId,
+        result
+      );
+
+    });
+
+
+    /*
+     * Retour immédiat vers opening.js.
+     */
+    return result;
+  }
+
+
+  // =====================================================
+  // CACHE APRÈS OPENING
+  // =====================================================
+
+  function applyOpeningResultToCaches(
+    studentId,
+    result
+  ) {
+
+    /*
+     * CACHE PROF
+     */
     if (
       teacherCache.dashboard &&
       Array.isArray(
         teacherCache.dashboard.students
       )
     ) {
+
       const student =
         teacherCache.dashboard.students.find(
           s =>
@@ -1257,32 +1812,51 @@
             String(studentId)
         );
 
+
       if (student) {
-        if (result.student) {
+
+        if (
+          result.student
+        ) {
+
           student.merits =
             result.student.merits;
+
         }
 
-        if (result.openings) {
+
+        if (
+          result.openings
+        ) {
+
           student.openings =
             result.openings;
 
+
           student.openingsCompleted =
             result.openings.completed;
+
         }
       }
 
+
+      /*
+       * Nombre de joueurs.
+       */
       if (
         teacherCache.dashboard.players
       ) {
+
         teacherCache.dashboard
           .players
           .owned =
           (
             teacherCache.dashboard
               .players
-              .owned || 0
+              .owned ||
+            0
           ) + 1;
+
 
         teacherCache.dashboard
           .players
@@ -1292,67 +1866,122 @@
             (
               teacherCache.dashboard
                 .players
-                .available || 0
+                .available ||
+              0
             ) - 1
           );
+
       }
+
+
+      teacherCache.dashboardAt =
+        now();
+
 
       saveTeacherCache();
     }
 
-    // Mise à jour collection locale.
+
+    /*
+     * CACHE COLLECTION ÉLÈVE
+     */
     const cached =
       publicCache.profiles &&
       publicCache.profiles[
         studentId
       ];
 
+
     if (
       cached &&
       cached.data
     ) {
+
       if (
         !Array.isArray(
           cached.data.collection
         )
       ) {
+
         cached.data.collection =
           [];
+
       }
 
-      if (result.player) {
-        cached.data.collection.push(
-          result.player
-        );
 
-        cached.data.collection.sort(
-          (a, b) =>
-            b.rating - a.rating
-        );
+      if (
+        result.player
+      ) {
+
+        /*
+         * Sécurité contre un doublon local
+         * si le cache était déjà actualisé.
+         */
+        const alreadyPresent =
+          cached.data.collection.some(
+            player =>
+              String(
+                player.id
+              ) ===
+              String(
+                result.player.id
+              )
+          );
+
+
+        if (!alreadyPresent) {
+
+          cached.data.collection.push(
+            result.player
+          );
+
+
+          cached.data.collection.sort(
+            (a, b) =>
+              Number(
+                b.rating || 0
+              ) -
+              Number(
+                a.rating || 0
+              )
+          );
+
+        }
       }
 
-      if (result.student) {
+
+      if (
+        result.student
+      ) {
+
         cached.data.student =
           result.student;
+
       }
 
-      if (result.openings) {
+
+      if (
+        result.openings
+      ) {
+
         cached.data.openings =
           result.openings;
+
       }
+
 
       cached.at =
         now();
 
+
       savePublicCache();
     }
+
 
     updateCachedPublicStudent(
       studentId,
       result.student || {}
     );
-
-    return result;
   }
 
 
@@ -1364,11 +1993,13 @@
     studentId,
     changes
   ) {
+
     if (
       Array.isArray(
         publicCache.students
       )
     ) {
+
       const student =
         publicCache.students.find(
           s =>
@@ -1376,13 +2007,17 @@
             String(studentId)
         );
 
+
       if (student) {
+
         Object.assign(
           student,
           changes
         );
+
       }
     }
+
 
     const profile =
       publicCache.profiles &&
@@ -1390,103 +2025,170 @@
         studentId
       ];
 
+
     if (
       profile &&
       profile.data &&
       profile.data.student
     ) {
+
       Object.assign(
         profile.data.student,
         changes
       );
 
+
       profile.at =
         now();
     }
+
 
     savePublicCache();
   }
 
 
   // =====================================================
-  // RESET / OUTILS
+  // RESET CACHE
   // =====================================================
 
   function clearCache() {
+
     publicCache = {
-      students: null,
-      studentsAt: 0,
 
-      config: null,
-      configAt: 0,
+      students:
+        null,
 
-      profiles: {},
-      searches: {}
+      studentsAt:
+        0,
+
+      config:
+        null,
+
+      configAt:
+        0,
+
+      profiles:
+        {},
+
+      searches:
+        {}
+
     };
+
 
     teacherCache = {
-      token: null,
-      dashboard: null,
-      dashboardAt: 0
+
+      token:
+        null,
+
+      dashboard:
+        null,
+
+      dashboardAt:
+        0
+
     };
+
 
     localStorage.removeItem(
       PUBLIC_CACHE_KEY
     );
+
 
     sessionStorage.removeItem(
       TEACHER_CACHE_KEY
     );
   }
 
+
   async function resetDemo() {
+
     clearCache();
+
     return true;
   }
 
 
   // =====================================================
-  // API PUBLIQUE JS
+  // API PUBLIQUE
   // =====================================================
 
   window.FC_API = {
+
     searchStudents,
+
     getStudents,
+
     getStudent,
+
     getPublicConfig,
 
+
     teacherLogin,
+
     getTeacherDashboard,
 
+
     updateStudentMerits,
+
     updateMeritsPerOpening,
 
+
     createStudent,
+
     archiveStudent,
 
+
     getOpeningContext,
+
     performOpening,
 
+
     resetDemo,
+
     clearCache
+
   };
 
 
   // =====================================================
-  // PRÉCHAUFFAGE AUTOMATIQUE
+  // PRÉCHAUFFAGE
   // =====================================================
 
+  /*
+   * Sur les pages normales :
+   * on garde le fonctionnement rapide local-first.
+   *
+   * Sur opening.html :
+   * RIEN.
+   *
+   * Pas getStudents()
+   * Pas getPublicConfig()
+   * Pas prefetchProfiles()
+   *
+   * La connexion est réservée au tirage.
+   */
   if (
+    !IS_OPENING_PAGE &&
     !config.useMockData &&
     config.apiBaseUrl
   ) {
+
     setTimeout(() => {
+
       getPublicConfig()
-        .catch(() => {});
+        .catch(
+          () => {}
+        );
+
 
       getStudents()
-        .catch(() => {});
+        .catch(
+          () => {}
+        );
+
     }, 0);
+
   }
 
 })();
