@@ -2,12 +2,15 @@
    BEL AIR FC — OPENING.JS
 
    PACK
-   → ballon / but + tirage serveur
-   → nationalité + club
-   → bouton suivant
-   → note + poste
-   → bouton révéler
-   → carte finale
+   → PENALTY 2,5 s
+   → BARRE
+   → REBOND LIGNE
+   → BUT + FEUX D'ARTIFICE
+   → NATIONALITÉ + CLUB
+   → SUIVANT
+   → NOTE + POSTE
+   → RÉVÉLER
+   → CARTE FINALE
    ========================================================= */
 
 (() => {
@@ -25,7 +28,6 @@
     console.error(
       "Bel Air FC : config.js ou api.js n'est pas chargé."
     );
-
     return;
   }
 
@@ -35,13 +37,42 @@
 
 
   /*
-   * L'animation du tir dure environ 1,4 seconde.
+   * Synchronisé avec :
    *
-   * Pendant ce temps Google Apps Script travaille.
+   * .opening-ball.is-shooting {
+   *   animation: zidanePenalty 2.5s ...
+   * }
    */
-  const GOAL_ANIMATION_DURATION = 1450;
+  const PENALTY_TIMING = {
+    total: 2500,
 
-  const FINAL_FLASH_DURATION = 430;
+    /*
+     * 58 % de 2500 ms
+     */
+    crossbar: 1450,
+
+    /*
+     * Vers 76 % :
+     * le rebond sur la ligne est directement
+     * géré par les keyframes CSS.
+     */
+    lineBounce: 1900,
+
+    /*
+     * Vers 82 % :
+     * le ballon commence à rentrer.
+     */
+    goal: 2050,
+
+    /*
+     * Feux + texte BUT.
+     */
+    celebration: 2070
+  };
+
+
+  const FINAL_FLASH_DURATION =
+    400;
 
 
   /* =======================================================
@@ -150,8 +181,18 @@
 
 
   /* =======================================================
-     BUT
+     PENALTY
      ======================================================= */
+
+  const goalScene =
+    document.getElementById(
+      "opening-goal-scene"
+    );
+
+  const openingGoal =
+    document.getElementById(
+      "opening-goal"
+    );
 
   const openingBall =
     document.getElementById(
@@ -270,7 +311,7 @@
 
 
   /* =======================================================
-     BOUTONS FINAUX
+     ACTIONS FINALES
      ======================================================= */
 
   const viewCollectionButton =
@@ -305,15 +346,15 @@
 
   let openingResult = null;
 
-  /*
-   * true uniquement pendant le vrai tirage serveur.
-   */
   let isOpening = false;
 
-  /*
-   * Empêche les doubles clics sur Suivant / Révéler.
-   */
   let transitionLocked = false;
+
+  /*
+   * Utilisé uniquement si Google met
+   * plus de 2,5 secondes.
+   */
+  let celebrationInterval = null;
 
 
   /* =======================================================
@@ -326,6 +367,17 @@
         resolve,
         ms
       );
+    });
+  }
+
+
+  function nextFrame() {
+    return new Promise(resolve => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(
+          resolve
+        );
+      });
     });
   }
 
@@ -375,7 +427,6 @@
      ======================================================= */
 
   const COUNTRY_CODES = {
-
     france: "FR",
 
     argentine: "AR",
@@ -389,6 +440,8 @@
 
     angleterre: "GB",
     england: "GB",
+
+    royaumeuni: "GB",
 
     allemagne: "DE",
     germany: "DE",
@@ -625,10 +678,11 @@
     value
   ) {
     const rarity =
-      normalizeRarity(value);
+      normalizeRarity(
+        value
+      );
 
     switch (rarity) {
-
       case "legendary":
         return "LÉGENDE";
 
@@ -700,7 +754,6 @@
 
   function loadTeacherSession() {
     try {
-
       const raw =
         sessionStorage.getItem(
           SESSION_STORAGE_KEY
@@ -723,7 +776,6 @@
       return true;
 
     } catch (error) {
-
       console.warn(
         "Impossible de lire la session professeur.",
         error
@@ -735,11 +787,10 @@
 
 
   /* =======================================================
-     ÉTATS PRINCIPAUX
+     ÉCRANS
      ======================================================= */
 
   function hideAllStates() {
-
     [
       loadingSection,
       errorSection,
@@ -747,11 +798,9 @@
       animationSection,
       revealSection
     ].forEach(section => {
-
       if (section) {
         section.hidden = true;
       }
-
     });
   }
 
@@ -788,7 +837,6 @@
     );
 
     if (animationSection) {
-
       animationSection.hidden =
         false;
 
@@ -820,6 +868,8 @@
 
 
   function showError(message) {
+    stopCelebrationHold();
+
     hideAllStates();
 
     document.body.classList.remove(
@@ -850,35 +900,27 @@
      ======================================================= */
 
   function hideAllSteps() {
-
     [
       stepIntro,
       stepIdentity,
       stepRating
     ].forEach(step => {
-
       if (step) {
         step.classList.remove(
           "is-active"
         );
       }
-
     });
   }
 
 
   function showStep(step) {
-
     hideAllSteps();
 
     if (!step) {
       return;
     }
 
-    /*
-     * Permet de relancer correctement
-     * les transitions CSS.
-     */
     void step.offsetWidth;
 
     step.classList.add(
@@ -892,7 +934,6 @@
      ======================================================= */
 
   function triggerFlash() {
-
     if (!openingFlash) {
       return;
     }
@@ -910,10 +951,73 @@
 
 
   /* =======================================================
-     RESET DU BUT
+     FEUX D'ARTIFICE
+     ======================================================= */
+
+  function triggerFireworks() {
+    if (!goalScene) {
+      return;
+    }
+
+    goalScene.classList.remove(
+      "is-celebrating"
+    );
+
+    void goalScene.offsetWidth;
+
+    goalScene.classList.add(
+      "is-celebrating"
+    );
+  }
+
+
+  /*
+   * Si Google dépasse les 2,5 secondes,
+   * on ne laisse PAS l'écran figé.
+   *
+   * Les feux se relancent jusqu'à ce que
+   * le résultat soit disponible.
+   */
+  function startCelebrationHold() {
+    stopCelebrationHold();
+
+    triggerFireworks();
+
+    celebrationInterval =
+      window.setInterval(
+        () => {
+          triggerFireworks();
+        },
+        850
+      );
+  }
+
+
+  function stopCelebrationHold() {
+    if (celebrationInterval !== null) {
+      window.clearInterval(
+        celebrationInterval
+      );
+
+      celebrationInterval =
+        null;
+    }
+
+    if (goalScene) {
+      goalScene.classList.remove(
+        "is-celebrating"
+      );
+    }
+  }
+
+
+  /* =======================================================
+     RESET PENALTY
      ======================================================= */
 
   function resetGoalScene() {
+    stopCelebrationHold();
+
 
     if (openingBall) {
       openingBall.classList.remove(
@@ -921,17 +1025,27 @@
       );
     }
 
+
+    if (openingGoal) {
+      openingGoal.classList.remove(
+        "is-crossbar-hit"
+      );
+    }
+
+
     if (goalNet) {
       goalNet.classList.remove(
         "is-hit"
       );
     }
 
+
     if (goalImpact) {
       goalImpact.classList.remove(
         "is-active"
       );
     }
+
 
     if (goalText) {
       goalText.hidden =
@@ -941,11 +1055,10 @@
 
 
   /* =======================================================
-     RESET GLOBAL
+     RESET COMPLET
      ======================================================= */
 
   function resetOpeningVisuals() {
-
     clearRarityTheme();
 
     hideAllSteps();
@@ -958,20 +1071,24 @@
         "🌍";
     }
 
+
     if (animationNationality) {
       animationNationality.textContent =
         "???";
     }
+
 
     if (animationClub) {
       animationClub.textContent =
         "???";
     }
 
+
     if (animationRating) {
       animationRating.textContent =
         "?";
     }
+
 
     if (animationPosition) {
       animationPosition.textContent =
@@ -986,7 +1103,6 @@
 
 
     if (revealedImage) {
-
       revealedImage.src =
         "";
 
@@ -1007,13 +1123,12 @@
 
 
   /* =======================================================
-     CONTEXTE
+     CONTEXTE OPENING
      ======================================================= */
 
   function renderOpeningContext(
     context
   ) {
-
     const student =
       context?.student || {};
 
@@ -1024,7 +1139,6 @@
 
 
     if (headerStudentName) {
-
       headerStudentName.textContent =
         student.name ||
         "Élève";
@@ -1032,14 +1146,12 @@
 
 
     if (readyDescription) {
-
       readyDescription.textContent =
         `${student.name || "L'élève"} va ouvrir son pack.`;
     }
 
 
     if (availableCount) {
-
       availableCount.textContent =
         safeNumber(
           openings.available
@@ -1048,7 +1160,6 @@
 
 
     if (playersLeft) {
-
       playersLeft.textContent =
         safeNumber(
           context?.availablePlayers
@@ -1057,7 +1168,6 @@
 
 
     if (packTypeLabel) {
-
       packTypeLabel.textContent =
         "PACK STANDARD";
     }
@@ -1069,23 +1179,18 @@
 
 
   async function loadOpeningContext() {
-
     if (!teacherToken) {
-
       showError(
         "Connexion professeur requise."
       );
-
       return;
     }
 
 
     if (!studentId) {
-
       showError(
         "Aucun élève sélectionné."
       );
-
       return;
     }
 
@@ -1094,11 +1199,6 @@
 
 
     try {
-
-      /*
-       * Grâce au api.js local-first,
-       * normalement cette partie est quasi immédiate.
-       */
       const context =
         await api.getOpeningContext(
           teacherToken,
@@ -1122,11 +1222,9 @@
           openings.available
         ) < 1
       ) {
-
         showError(
           "Cet élève n'a aucun opening disponible."
         );
-
         return;
       }
 
@@ -1136,11 +1234,9 @@
           context?.availablePlayers
         ) < 1
       ) {
-
         showError(
           "Il n'y a plus aucun joueur disponible."
         );
-
         return;
       }
 
@@ -1149,17 +1245,14 @@
         context
       );
 
-
       showReady();
 
 
     } catch (error) {
-
       console.error(
         "Erreur préparation opening :",
         error
       );
-
 
       showError(
         error?.message ||
@@ -1170,13 +1263,12 @@
 
 
   /* =======================================================
-     PRÉCHARGER PHOTO
+     PRÉCHARGEMENT IMAGE
      ======================================================= */
 
   function preloadPlayerImage(
     player
   ) {
-
     if (!player?.image) {
       return;
     }
@@ -1190,11 +1282,10 @@
 
 
   /* =======================================================
-     ANIMATION DU BUT
+     PENALTY — 2,5 SECONDES
      ======================================================= */
 
-  async function playGoalAnimation() {
-
+  async function playPenaltyAnimation() {
     resetGoalScene();
 
     showAnimation();
@@ -1205,18 +1296,21 @@
 
 
     /*
-     * Petit délai pour laisser le navigateur
-     * afficher la scène avant le départ du ballon.
+     * On attend deux frames pour être sûr
+     * que le navigateur a affiché le terrain.
      */
-    await sleep(80);
+    await nextFrame();
 
+
+    /* -----------------------------------------------------
+       DÉPART DU BALLON
+       ----------------------------------------------------- */
 
     if (openingBall) {
+      openingBall.classList.remove(
+        "is-shooting"
+      );
 
-      /*
-       * Force l'animation à repartir
-       * lors d'un deuxième opening.
-       */
       void openingBall.offsetWidth;
 
       openingBall.classList.add(
@@ -1225,17 +1319,55 @@
     }
 
 
-    /*
-     * Le ballon approche des cages.
-     */
-    await sleep(820);
+    /* -----------------------------------------------------
+       1,45 s — BARRE
+       ----------------------------------------------------- */
+
+    await sleep(
+      PENALTY_TIMING.crossbar
+    );
 
 
-    /*
-     * IMPACT DANS LE FILET
-     */
+    if (openingGoal) {
+      openingGoal.classList.remove(
+        "is-crossbar-hit"
+      );
+
+      void openingGoal.offsetWidth;
+
+      openingGoal.classList.add(
+        "is-crossbar-hit"
+      );
+    }
+
+
+    /* -----------------------------------------------------
+       1,90 s — REBOND LIGNE
+
+       Le mouvement du ballon est déjà
+       dans les keyframes CSS.
+
+       On ne fait volontairement aucun flash ici :
+       on doit bien voir le rebond.
+       ----------------------------------------------------- */
+
+    await sleep(
+      PENALTY_TIMING.lineBounce -
+      PENALTY_TIMING.crossbar
+    );
+
+
+    /* -----------------------------------------------------
+       2,05 s — LE BALLON RENTRE
+       ----------------------------------------------------- */
+
+    await sleep(
+      PENALTY_TIMING.goal -
+      PENALTY_TIMING.lineBounce
+    );
+
+
     if (goalNet) {
-
       goalNet.classList.remove(
         "is-hit"
       );
@@ -1249,7 +1381,6 @@
 
 
     if (goalImpact) {
-
       goalImpact.classList.remove(
         "is-active"
       );
@@ -1262,13 +1393,19 @@
     }
 
 
+    /* -----------------------------------------------------
+       FEUX D'ARTIFICE + BUT
+       ----------------------------------------------------- */
+
+    await sleep(
+      PENALTY_TIMING.celebration -
+      PENALTY_TIMING.goal
+    );
+
+
+    triggerFireworks();
+
     triggerFlash();
-
-
-    /*
-     * BUT !
-     */
-    await sleep(120);
 
 
     if (goalText) {
@@ -1277,34 +1414,30 @@
     }
 
 
-    /*
-     * On laisse un instant le but à l'écran.
-     */
+    /* -----------------------------------------------------
+       FIN EXACTE DES 2,5 SECONDES
+       ----------------------------------------------------- */
+
     await sleep(
-      Math.max(
-        0,
-        GOAL_ANIMATION_DURATION -
-        1020
-      )
+      PENALTY_TIMING.total -
+      PENALTY_TIMING.celebration
     );
   }
 
 
   /* =======================================================
-     PRÉPARER NATIONALITÉ + CLUB
+     NATIONALITÉ + CLUB
      ======================================================= */
 
   function prepareIdentityScreen(
     player
   ) {
-
     const nationality =
       player?.nationality ||
       "Inconnue";
 
 
     if (animationFlag) {
-
       animationFlag.textContent =
         getFlagEmoji(
           nationality
@@ -1313,14 +1446,12 @@
 
 
     if (animationNationality) {
-
       animationNationality.textContent =
         nationality;
     }
 
 
     if (animationClub) {
-
       animationClub.textContent =
         player?.club ||
         "Club inconnu";
@@ -1329,15 +1460,13 @@
 
 
   /* =======================================================
-     PRÉPARER NOTE + POSTE
+     NOTE + POSTE
      ======================================================= */
 
   function prepareRatingScreen(
     player
   ) {
-
     if (animationRating) {
-
       animationRating.textContent =
         safeNumber(
           player?.rating,
@@ -1347,7 +1476,6 @@
 
 
     if (animationPosition) {
-
       animationPosition.textContent =
         player?.position ||
         "?";
@@ -1362,7 +1490,6 @@
   function renderFinalCard(
     result
   ) {
-
     const player =
       result?.player || {};
 
@@ -1370,16 +1497,12 @@
       result?.student || {};
 
 
-    /*
-     * La rareté n'est révélée qu'ici.
-     */
     applyRarityTheme(
       player.rarity
     );
 
 
     if (revealedRarity) {
-
       revealedRarity.textContent =
         rarityLabel(
           player.rarity
@@ -1388,7 +1511,6 @@
 
 
     if (revealedRating) {
-
       revealedRating.textContent =
         safeNumber(
           player.rating
@@ -1397,7 +1519,6 @@
 
 
     if (revealedPosition) {
-
       revealedPosition.textContent =
         player.position ||
         "-";
@@ -1405,7 +1526,6 @@
 
 
     if (revealedName) {
-
       revealedName.textContent =
         player.name ||
         "Joueur";
@@ -1413,7 +1533,6 @@
 
 
     if (revealedClub) {
-
       revealedClub.textContent =
         player.club ||
         "Club";
@@ -1421,7 +1540,6 @@
 
 
     if (revealedNationality) {
-
       const nationality =
         player.nationality ||
         "Nationalité";
@@ -1434,7 +1552,6 @@
 
 
     if (revealStudentName) {
-
       revealStudentName.textContent =
         student.name ||
         openingContext
@@ -1444,15 +1561,14 @@
     }
 
 
-    /* -------------------------------------------------------
+    /* -----------------------------------------------------
        PHOTO
-       ------------------------------------------------------- */
+       ----------------------------------------------------- */
 
     if (
       revealedImage &&
       player.image
     ) {
-
       revealedImage.src =
         player.image;
 
@@ -1472,13 +1588,10 @@
 
       revealedImage.onerror =
         () => {
-
           revealedImage.hidden =
             true;
 
-
           if (revealedFallback) {
-
             revealedFallback.hidden =
               false;
 
@@ -1492,7 +1605,6 @@
 
 
     } else {
-
       if (revealedImage) {
         revealedImage.hidden =
           true;
@@ -1500,7 +1612,6 @@
 
 
       if (revealedFallback) {
-
         revealedFallback.hidden =
           false;
 
@@ -1513,12 +1624,11 @@
     }
 
 
-    /* -------------------------------------------------------
+    /* -----------------------------------------------------
        COLLECTION
-       ------------------------------------------------------- */
+       ----------------------------------------------------- */
 
     if (viewCollectionButton) {
-
       const route =
         config.routes?.student ||
         "eleve.html";
@@ -1530,9 +1640,9 @@
     }
 
 
-    /* -------------------------------------------------------
+    /* -----------------------------------------------------
        OPENINGS RESTANTS
-       ------------------------------------------------------- */
+       ----------------------------------------------------- */
 
     const remaining =
       safeNumber(
@@ -1544,20 +1654,17 @@
 
 
     if (openAnotherButton) {
-
       openAnotherButton.hidden =
         remaining < 1;
 
 
       if (remaining === 1) {
-
         openAnotherButton.textContent =
           "Ouvrir le suivant";
       }
 
 
       if (remaining > 1) {
-
         openAnotherButton.textContent =
           `Ouvrir le suivant · ${remaining} restants`;
       }
@@ -1565,7 +1672,6 @@
 
 
     if (backTeacherButton) {
-
       backTeacherButton.hidden =
         false;
     }
@@ -1573,27 +1679,24 @@
 
 
   /* =======================================================
-     MISE À JOUR CONTEXTE LOCAL
+     CONTEXTE LOCAL
      ======================================================= */
 
   function updateLocalContext(
     result
   ) {
-
     if (!openingContext) {
       openingContext = {};
     }
 
 
     if (result?.student) {
-
       openingContext.student =
         result.student;
     }
 
 
     if (result?.openings) {
-
       openingContext.openings =
         result.openings;
 
@@ -1602,9 +1705,6 @@
     }
 
 
-    /*
-     * 1 opening = 1 joueur libre de moins.
-     */
     openingContext.availablePlayers =
       Math.max(
         0,
@@ -1621,9 +1721,9 @@
      ======================================================= */
 
   async function performOpening() {
-
     if (
       isOpening ||
+      transitionLocked ||
       !teacherToken ||
       !studentId
     ) {
@@ -1637,6 +1737,7 @@
     openingResult =
       null;
 
+
     resetOpeningVisuals();
 
 
@@ -1647,15 +1748,15 @@
 
 
     /*
-     * =====================================================
-     * ON LANCE LES DEUX EN MÊME TEMPS
-     * =====================================================
+     * IMPORTANT :
      *
-     * 1. Google choisit / sauvegarde le joueur.
-     * 2. Le ballon part vers les cages.
-     *
-     * Aucun temps mort.
+     * Google ET le penalty démarrent
+     * au même moment.
      */
+
+
+    let serverFinished =
+      false;
 
 
     const serverPromise =
@@ -1665,10 +1766,11 @@
         packType
       )
       .then(result => {
+        serverFinished =
+          true;
 
         /*
-         * Dès que Google répond,
-         * on précharge immédiatement la photo.
+         * Photo préchargée immédiatement.
          */
         preloadPlayerImage(
           result?.player
@@ -1679,38 +1781,51 @@
           result
         };
       })
-      .catch(error => ({
-        ok: false,
-        error
-      }));
+      .catch(error => {
+        serverFinished =
+          true;
 
-
-    const goalPromise =
-      playGoalAnimation();
+        return {
+          ok: false,
+          error
+        };
+      });
 
 
     try {
+      /*
+       * ---------------------------------------------
+       * LE PENALTY DURE TOUJOURS 2,5 SECONDES
+       * ---------------------------------------------
+       */
+
+      await playPenaltyAnimation();
+
 
       /*
-       * On attend :
+       * ---------------------------------------------
+       * À 2,5 s :
        *
-       * - que le but soit terminé,
-       * - ET que Google ait fini.
+       * si Google est prêt → SWITCH IMMÉDIAT.
        *
-       * Si Google termine pendant le tir,
-       * aucune attente supplémentaire.
+       * sinon → on garde les feux d'artifice
+       * jusqu'à la réponse.
+       * ---------------------------------------------
        */
-      const [
-        serverOutcome
-      ] =
-        await Promise.all([
-          serverPromise,
-          goalPromise
-        ]);
+
+      if (!serverFinished) {
+        startCelebrationHold();
+      }
+
+
+      const serverOutcome =
+        await serverPromise;
+
+
+      stopCelebrationHold();
 
 
       if (!serverOutcome.ok) {
-
         throw serverOutcome.error;
       }
 
@@ -1729,8 +1844,10 @@
 
 
       /*
-       * Toutes les données sont maintenant prêtes.
+       * Toutes les informations sont prêtes
+       * avant de changer d'écran.
        */
+
       prepareIdentityScreen(
         result.player
       );
@@ -1742,16 +1859,12 @@
 
 
       /*
-       * ===============================================
-       * PREMIÈRE RÉVÉLATION
-       * NATIONALITÉ + CLUB
-       * ===============================================
+       * ---------------------------------------------
+       * SWAP IMMÉDIAT
+       * ---------------------------------------------
+       *
+       * Aucun sleep ici.
        */
-
-      triggerFlash();
-
-      await sleep(180);
-
 
       showStep(
         stepIdentity
@@ -1759,23 +1872,27 @@
 
 
       /*
-       * À partir d'ici le serveur a terminé.
-       * L'élève contrôle la suite.
+       * Petit flash au moment du changement,
+       * mais sans ralentir le changement.
        */
+      triggerFlash();
+
+
       isOpening =
         false;
 
 
     } catch (error) {
+      stopCelebrationHold();
+
+      isOpening =
+        false;
+
 
       console.error(
         "Erreur pendant l'opening :",
         error
       );
-
-
-      isOpening =
-        false;
 
 
       showError(
@@ -1785,7 +1902,6 @@
 
 
     } finally {
-
       if (packButton) {
         packButton.disabled =
           false;
@@ -1795,14 +1911,14 @@
 
 
   /* =======================================================
-     BOUTON SUIVANT
+     SUIVANT
      NATIONALITÉ + CLUB → NOTE + POSTE
      ======================================================= */
 
   async function goToRatingStep() {
-
     if (
       transitionLocked ||
+      isOpening ||
       !openingResult
     ) {
       return;
@@ -1822,7 +1938,7 @@
     triggerFlash();
 
 
-    await sleep(180);
+    await sleep(160);
 
 
     showStep(
@@ -1830,7 +1946,7 @@
     );
 
 
-    await sleep(150);
+    await sleep(120);
 
 
     if (nextIdentityButton) {
@@ -1845,14 +1961,14 @@
 
 
   /* =======================================================
-     BOUTON RÉVÉLER
+     RÉVÉLER
      NOTE + POSTE → CARTE
      ======================================================= */
 
   async function revealPlayer() {
-
     if (
       transitionLocked ||
+      isOpening ||
       !openingResult
     ) {
       return;
@@ -1870,8 +1986,8 @@
 
 
     /*
-     * On prépare la carte pendant
-     * qu'elle est encore cachée.
+     * Préparation pendant que la carte
+     * est encore invisible.
      */
     renderFinalCard(
       openingResult
@@ -1881,9 +1997,6 @@
     hideAllSteps();
 
 
-    /*
-     * Gros flash final.
-     */
     triggerFlash();
 
 
@@ -1911,7 +2024,6 @@
      ======================================================= */
 
   function prepareAnotherOpening() {
-
     if (
       isOpening ||
       transitionLocked ||
@@ -1982,13 +2094,12 @@
 
 
   /* =======================================================
-     PROTECTION PENDANT LE VRAI TIRAGE
+     PROTECTION SI LE TIRAGE SERVEUR EST EN COURS
      ======================================================= */
 
   window.addEventListener(
     "beforeunload",
     event => {
-
       if (!isOpening) {
         return;
       }
@@ -2006,14 +2117,10 @@
      ======================================================= */
 
   async function init() {
-
     readUrlParameters();
 
 
-    if (
-      !loadTeacherSession()
-    ) {
-
+    if (!loadTeacherSession()) {
       showError(
         "Tu dois être connecté dans l'espace professeur."
       );
