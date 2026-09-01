@@ -1,46 +1,62 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <meta name="theme-color" content="#07150f">
-
-  <title>FC Classe — Opening</title>
+  <meta charset="UTF-8">
 
   <meta
-    name="description"
-    content="Opening d'un pack FC Classe."
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
   >
 
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/opening.css">
+  <meta
+    name="theme-color"
+    content="#06111f"
+  >
 
-  <script src="js/config.js" defer></script>
-  <script src="js/mock-data.js" defer></script>
-  <script src="js/api.js" defer></script>
-  <script src="js/opening.js" defer></script>
+  <title>Opening — Bel Air FC</title>
+
+  <link
+    rel="stylesheet"
+    href="css/base.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="css/opening.css"
+  >
 </head>
 
-<body class="page-opening">
+
+<body class="opening-page">
+
 
   <!-- =====================================================
-       FOND / AMBIANCE
+       FLASH GLOBAL
+       ===================================================== -->
+
+  <div
+    id="opening-flash"
+    class="opening-flash"
+    aria-hidden="true"
+  ></div>
+
+
+  <!-- =====================================================
+       FOND / STADE
        ===================================================== -->
 
   <div
     class="opening-background"
     aria-hidden="true"
   >
-    <div class="opening-light opening-light-left"></div>
-    <div class="opening-light opening-light-right"></div>
 
-    <div class="opening-grid"></div>
+    <div class="opening-bg-glow"></div>
 
-    <div class="opening-pitch-lines">
-      <div class="opening-pitch-circle"></div>
-      <div class="opening-pitch-line"></div>
-    </div>
+    <div class="opening-bg-lines"></div>
+
+    <div class="opening-bg-particles"></div>
+
   </div>
 
 
@@ -53,14 +69,13 @@
     <a
       class="opening-brand"
       href="prof.html"
-      aria-label="Retour à l'espace professeur"
     >
-      <span class="opening-brand-mark">
-        FC
+      <span class="opening-brand-badge">
+        BA
       </span>
 
-      <span>
-        FC Classe
+      <span class="opening-brand-text">
+        BEL AIR FC
       </span>
     </a>
 
@@ -68,10 +83,13 @@
     <div class="opening-header-center">
 
       <span class="opening-header-label">
-        Opening de
+        OPENING DE
       </span>
 
-      <strong id="opening-student-name">
+      <strong
+        id="opening-student-name"
+        class="opening-header-student"
+      >
         Élève
       </strong>
 
@@ -79,11 +97,11 @@
 
 
     <a
-      id="opening-back-button"
-      class="opening-exit"
+      class="opening-close"
       href="prof.html"
+      aria-label="Retour à l'espace professeur"
     >
-      ✕ Quitter
+      ✕
     </a>
 
   </header>
@@ -97,7 +115,7 @@
 
 
     <!-- ===================================================
-         CHARGEMENT
+         CHARGEMENT INITIAL
          =================================================== -->
 
     <section
@@ -105,10 +123,16 @@
       class="opening-state opening-loading"
     >
 
-      <div class="opening-loader"></div>
+      <div class="opening-loader-ball">
+        ⚽
+      </div>
+
+      <h1>
+        Préparation du pack
+      </h1>
 
       <p>
-        Préparation de l'opening...
+        Bel Air FC prépare l'opening…
       </p>
 
     </section>
@@ -128,12 +152,8 @@
         !
       </div>
 
-      <p class="opening-eyebrow">
-        Impossible de lancer l'opening
-      </p>
-
       <h1>
-        Petit problème
+        Impossible de lancer l'opening
       </h1>
 
       <p
@@ -144,17 +164,17 @@
       </p>
 
       <a
-        class="button button-primary"
         href="prof.html"
+        class="opening-action-button"
       >
-        Retour au tableau de bord
+        Retour à l'espace prof
       </a>
 
     </section>
 
 
     <!-- ===================================================
-         ÉTAPE 1 — PACK À OUVRIR
+         PACK PRÊT
          =================================================== -->
 
     <section
@@ -163,131 +183,104 @@
       hidden
     >
 
-      <div class="opening-ready-copy">
+      <div class="opening-ready-top">
 
-        <p class="opening-eyebrow">
-          Opening disponible
-        </p>
+        <span
+          id="pack-type-label"
+          class="opening-pack-type"
+        >
+          PACK STANDARD
+        </span>
 
         <h1>
-          C'est parti.
+          Prêt pour l'opening ?
         </h1>
 
         <p
           id="opening-ready-description"
           class="opening-ready-description"
         >
-          Un joueur unique va rejoindre la collection.
+          Un nouveau joueur va rejoindre la collection.
         </p>
 
       </div>
 
 
-      <div class="pack-stage">
+      <!-- PACK -->
 
-        <div
-          class="pack-glow"
-          aria-hidden="true"
-        ></div>
+      <button
+        id="pack-button"
+        class="opening-pack-button"
+        type="button"
+      >
 
+        <span class="opening-pack-light"></span>
 
-        <button
-          id="pack-button"
-          class="pack-button"
-          type="button"
-          aria-label="Ouvrir le pack"
-        >
+        <span class="opening-pack">
 
-          <span class="pack-card">
-
-            <span class="pack-card-top">
-
-              <span class="pack-logo">
-                FC
-              </span>
-
-              <span
-                id="pack-type-label"
-                class="pack-type"
-              >
-                STANDARD
-              </span>
-
-            </span>
-
-
-            <span class="pack-card-center">
-
-              <span
-                class="pack-symbol"
-                aria-hidden="true"
-              >
-                ⚽
-              </span>
-
-              <strong>
-                FC CLASSE
-              </strong>
-
-              <small>
-                PLAYER PACK
-              </small>
-
-            </span>
-
-
-            <span class="pack-card-bottom">
-
-              <span>
-                1 JOUEUR
-              </span>
-
-              <span>
-                UNIQUE
-              </span>
-
-            </span>
-
+          <span class="opening-pack-top">
+            BEL AIR
           </span>
 
-
-          <span class="pack-button-text">
-            Cliquer pour ouvrir
+          <span class="opening-pack-logo">
+            BA
           </span>
 
-        </button>
-
-      </div>
-
-
-      <div class="opening-ready-info">
-
-        <div>
-
-          <span>
-            Openings disponibles
+          <span class="opening-pack-ball">
+            ⚽
           </span>
 
-          <strong
-            id="opening-available-count"
-          >
-            0
-          </strong>
+          <span class="opening-pack-name">
+            FC
+          </span>
+
+          <span class="opening-pack-bottom">
+            PLAYER PACK
+          </span>
+
+        </span>
+
+        <span class="opening-pack-click">
+          CLIQUE POUR OUVRIR
+        </span>
+
+      </button>
+
+
+      <!-- INFOS -->
+
+      <div class="opening-ready-stats">
+
+        <div class="opening-ready-stat">
+
+          <span class="opening-stat-value">
+            <strong
+              id="opening-available-count"
+            >
+              0
+            </strong>
+          </span>
+
+          <span class="opening-stat-label">
+            openings disponibles
+          </span>
 
         </div>
 
 
-        <div>
+        <div class="opening-ready-stat">
 
-          <span>
-            Joueurs encore disponibles
+          <span class="opening-stat-value">
+            <strong
+              id="opening-players-left"
+            >
+              0
+            </strong>
           </span>
 
-          <strong
-            id="opening-players-left"
-          >
-            0
-          </strong>
+          <span class="opening-stat-label">
+            joueurs encore libres
+          </span>
 
         </div>
 
@@ -297,7 +290,7 @@
 
 
     <!-- ===================================================
-         ÉTAPE 2 — ANIMATION
+         ANIMATION FIFA
          =================================================== -->
 
     <section
@@ -306,78 +299,216 @@
       hidden
     >
 
-      <div
-        id="opening-flash"
-        class="opening-flash"
-        aria-hidden="true"
-      ></div>
 
+      <!-- TUNNEL / PORTE -->
 
       <div class="opening-tunnel">
 
-        <div
-          class="tunnel-line tunnel-line-1"
-          aria-hidden="true"
-        ></div>
+        <div class="tunnel-light tunnel-light-left"></div>
 
-        <div
-          class="tunnel-line tunnel-line-2"
-          aria-hidden="true"
-        ></div>
+        <div class="tunnel-light tunnel-light-right"></div>
 
-        <div
-          class="tunnel-line tunnel-line-3"
-          aria-hidden="true"
-        ></div>
+        <div class="tunnel-door tunnel-door-left"></div>
 
-        <div
-          class="tunnel-line tunnel-line-4"
-          aria-hidden="true"
-        ></div>
+        <div class="tunnel-door tunnel-door-right"></div>
 
 
-        <div class="opening-animation-center">
+        <div class="opening-stage-content">
+
+
+          <!-- =============================================
+               ÉTAPE INTRO
+               ============================================= -->
 
           <div
-            id="animation-rating"
-            class="animation-rating"
+            id="opening-step-intro"
+            class="opening-step opening-step-intro is-active"
           >
-            ?
+
+            <div class="opening-step-icon">
+              ⚽
+            </div>
+
+            <div
+              id="opening-animation-text"
+              class="opening-animation-text"
+            >
+              Le pack s'ouvre…
+            </div>
+
           </div>
 
 
+          <!-- =============================================
+               ÉTAPE 1 : RARETÉ
+               ============================================= -->
+
           <div
-            id="animation-position"
-            class="animation-position"
+            id="opening-step-rarity"
+            class="opening-step opening-step-rarity"
           >
-            ???
+
+            <span class="opening-step-label">
+              RARETÉ
+            </span>
+
+            <div
+              id="animation-rarity"
+              class="opening-rarity"
+            >
+              ?
+            </div>
+
           </div>
 
 
+          <!-- =============================================
+               ÉTAPE 2 : CLUB + NATIONALITÉ
+               ============================================= -->
+
           <div
-            id="animation-nationality"
-            class="animation-nationality"
+            id="opening-step-identity"
+            class="opening-step opening-step-identity"
           >
-            FC CLASSE
+
+            <span class="opening-step-label">
+              INDICES
+            </span>
+
+
+            <div class="opening-identity-content">
+
+
+              <!-- NATIONALITÉ -->
+
+              <div class="opening-identity-item">
+
+                <span class="opening-identity-small-label">
+                  NATIONALITÉ
+                </span>
+
+                <strong
+                  id="animation-nationality"
+                  class="opening-animation-nationality"
+                >
+                  ???
+                </strong>
+
+              </div>
+
+
+              <div class="opening-identity-separator"></div>
+
+
+              <!-- CLUB -->
+
+              <div class="opening-identity-item">
+
+                <span class="opening-identity-small-label">
+                  CLUB
+                </span>
+
+                <strong
+                  id="animation-club"
+                  class="opening-animation-club"
+                >
+                  ???
+                </strong>
+
+              </div>
+
+            </div>
+
           </div>
+
+
+          <!-- =============================================
+               ÉTAPE 3 : NOTE + POSTE
+               ============================================= -->
+
+          <div
+            id="opening-step-rating"
+            class="opening-step opening-step-rating"
+          >
+
+            <span class="opening-step-label">
+              LE JOUEUR SE RÉVÈLE
+            </span>
+
+
+            <div class="opening-rating-zone">
+
+
+              <div class="opening-rating-block">
+
+                <span class="opening-rating-small">
+                  NOTE
+                </span>
+
+                <strong
+                  id="animation-rating"
+                  class="opening-animation-rating"
+                >
+                  ?
+                </strong>
+
+              </div>
+
+
+              <div class="opening-rating-divider"></div>
+
+
+              <div class="opening-position-block">
+
+                <span class="opening-rating-small">
+                  POSTE
+                </span>
+
+                <strong
+                  id="animation-position"
+                  class="opening-animation-position"
+                >
+                  ???
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- =============================================
+               ÉTAPE AVANT RÉVÉLATION
+               ============================================= -->
+
+          <div
+            id="opening-step-final"
+            class="opening-step opening-step-final"
+          >
+
+            <div class="opening-final-glow"></div>
+
+            <span class="opening-step-label">
+              NOUVEAU JOUEUR
+            </span>
+
+            <strong class="opening-final-text">
+              BEL AIR FC
+            </strong>
+
+          </div>
+
 
         </div>
 
       </div>
 
-
-      <p
-        id="opening-animation-text"
-        class="opening-animation-text"
-      >
-        Le joueur arrive...
-      </p>
-
     </section>
 
 
     <!-- ===================================================
-         ÉTAPE 3 — RÉVÉLATION
+         RÉVÉLATION FINALE
          =================================================== -->
 
     <section
@@ -386,67 +517,69 @@
       hidden
     >
 
-      <div class="reveal-header">
 
-        <p class="opening-eyebrow">
-          Nouveau joueur
-        </p>
+      <!-- CONFETTIS / PARTICULES -->
 
-        <h1>
-          Bienvenue dans l'équipe !
-        </h1>
-
-      </div>
+      <div
+        class="opening-reveal-particles"
+        aria-hidden="true"
+      ></div>
 
 
-      <div class="reveal-stage">
+      <div class="revealed-wrapper">
+
+
+        <!-- BADGE RARETÉ -->
 
         <div
-          class="reveal-rays"
-          aria-hidden="true"
-        ></div>
+          id="revealed-rarity"
+          class="revealed-rarity"
+        >
+          JOUEUR
+        </div>
 
+
+        <!-- CARTE -->
 
         <article
           id="revealed-player-card"
           class="revealed-player-card"
         >
 
-          <div class="revealed-card-header">
 
-            <div>
+          <!-- NOTE / POSTE -->
 
-              <strong
-                id="revealed-player-rating"
-                class="revealed-player-rating"
-              >
-                90
-              </strong>
+          <div class="revealed-card-rating">
 
-              <span
-                id="revealed-player-position"
-                class="revealed-player-position"
-              >
-                BU
-              </span>
+            <strong
+              id="revealed-player-rating"
+              class="revealed-rating"
+            >
+              0
+            </strong>
 
-            </div>
-
-
-            <span class="revealed-fc-logo">
-              FC
+            <span
+              id="revealed-player-position"
+              class="revealed-position"
+            >
+              -
             </span>
 
           </div>
 
 
-          <div class="revealed-player-image-wrap">
+          <!-- IMAGE -->
+
+          <div class="revealed-image-zone">
+
+            <div class="revealed-player-glow"></div>
 
             <img
               id="revealed-player-image"
               class="revealed-player-image"
               src=""
               alt=""
+              hidden
             >
 
             <div
@@ -454,117 +587,123 @@
               class="revealed-player-fallback"
               hidden
             >
-              FC
+              BA
             </div>
 
           </div>
 
 
+          <!-- NOM -->
+
           <div class="revealed-player-info">
 
-            <h2
+            <h1
               id="revealed-player-name"
+              class="revealed-player-name"
             >
               Joueur
-            </h2>
+            </h1>
 
-            <p
-              id="revealed-player-club"
-            >
-              Club
-            </p>
+
+            <div class="revealed-player-details">
+
+              <span
+                id="revealed-player-nationality"
+              >
+                Nationalité
+              </span>
+
+              <span class="revealed-detail-dot">
+                •
+              </span>
+
+              <span
+                id="revealed-player-club"
+              >
+                Club
+              </span>
+
+            </div>
 
           </div>
 
-
-          <div class="revealed-player-meta">
-
-            <span
-              id="revealed-player-nationality"
-            >
-              Nationalité
-            </span>
-
-            <span>
-              JOUEUR UNIQUE
-            </span>
-
-          </div>
 
         </article>
 
-      </div>
+
+        <!-- MESSAGE -->
+
+        <div class="opening-reveal-message">
+
+          <span>
+            Nouveau joueur pour
+          </span>
+
+          <strong
+            id="reveal-student-name"
+          >
+            Élève
+          </strong>
+
+        </div>
 
 
-      <div class="reveal-owner">
+        <!-- ACTIONS -->
 
-        <span>
-          Rejoint la collection de
-        </span>
-
-        <strong
-          id="reveal-student-name"
-        >
-          Élève
-        </strong>
-
-      </div>
+        <div class="opening-reveal-actions">
 
 
-      <div class="reveal-actions">
-
-        <a
-          id="view-student-collection"
-          class="button button-secondary"
-          href="eleve.html"
-        >
-          Voir sa collection
-        </a>
+          <a
+            id="view-student-collection"
+            class="opening-action-button opening-action-secondary"
+            href="eleve.html"
+          >
+            Voir sa collection
+          </a>
 
 
-        <button
-          id="open-another-pack"
-          class="button button-primary"
-          type="button"
-          hidden
-        >
-          Ouvrir le suivant
-        </button>
+          <button
+            id="open-another-pack"
+            class="opening-action-button opening-action-primary"
+            type="button"
+            hidden
+          >
+            Ouvrir le suivant
+          </button>
 
 
-        <a
-          id="back-to-teacher"
-          class="button button-primary"
-          href="prof.html"
-        >
-          Retour au tableau de bord
-        </a>
+          <a
+            id="back-to-teacher"
+            class="opening-action-button opening-action-back"
+            href="prof.html"
+          >
+            Retour espace prof
+          </a>
+
+        </div>
+
 
       </div>
 
     </section>
 
+
   </main>
 
 
   <!-- =====================================================
-       BAS DE PAGE
+       SCRIPTS
        ===================================================== -->
 
-  <footer
-    id="opening-footer"
-    class="opening-footer"
-  >
+  <script src="js/config.js"></script>
 
-    <span>
-      FC Classe
-    </span>
+  <script src="js/mock-data.js"></script>
 
-    <span>
-      Chaque joueur ne peut appartenir qu'à un seul élève.
-    </span>
+  <script src="js/api.js"></script>
 
-  </footer>
+  <script src="js/opening.js"></script>
+
 
 </body>
+
 </html>
