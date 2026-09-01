@@ -1,10 +1,15 @@
 /* =========================================================
    BEL AIR FC — OPENING.JS
-   Opening rapide / local-first
+   Opening rapide façon EA FC / FIFA
    ========================================================= */
 
 (() => {
   "use strict";
+
+
+  /* =======================================================
+     CONFIG / API
+     ======================================================= */
 
   const config = window.FC_CONFIG;
   const api = window.FC_API;
@@ -13,6 +18,7 @@
     console.error(
       "Bel Air FC : config.js ou api.js n'est pas chargé."
     );
+
     return;
   }
 
@@ -24,16 +30,41 @@
   const SESSION_STORAGE_KEY =
     "fcClasse_teacherSession_v1";
 
+  /*
+   * Durées volontairement assez courtes.
+   *
+   * L'opening reste spectaculaire,
+   * mais ne fait pas perdre 20 secondes
+   * à chaque élève.
+   */
+  const TIMINGS = {
+    minimumIntro: 650,
+
+    rarity: 650,
+
+    identity: 800,
+
+    rating: 850,
+
+    final: 500,
+
+    revealDelay: 180
+  };
+
 
   /* =======================================================
-     DOM
+     DOM — ÉTATS PRINCIPAUX
      ======================================================= */
 
   const loadingSection =
-    document.getElementById("opening-loading");
+    document.getElementById(
+      "opening-loading"
+    );
 
   const errorSection =
-    document.getElementById("opening-error");
+    document.getElementById(
+      "opening-error"
+    );
 
   const errorMessage =
     document.getElementById(
@@ -41,7 +72,9 @@
     );
 
   const readySection =
-    document.getElementById("opening-ready");
+    document.getElementById(
+      "opening-ready"
+    );
 
   const animationSection =
     document.getElementById(
@@ -54,11 +87,19 @@
     );
 
 
+  /* =======================================================
+     HEADER
+     ======================================================= */
+
   const headerStudentName =
     document.getElementById(
       "opening-student-name"
     );
 
+
+  /* =======================================================
+     READY / PACK
+     ======================================================= */
 
   const packButton =
     document.getElementById(
@@ -86,9 +127,68 @@
     );
 
 
+  /* =======================================================
+     FLASH
+     ======================================================= */
+
   const openingFlash =
     document.getElementById(
       "opening-flash"
+    );
+
+
+  /* =======================================================
+     ÉTAPES ANIMATION
+     ======================================================= */
+
+  const stepIntro =
+    document.getElementById(
+      "opening-step-intro"
+    );
+
+  const stepRarity =
+    document.getElementById(
+      "opening-step-rarity"
+    );
+
+  const stepIdentity =
+    document.getElementById(
+      "opening-step-identity"
+    );
+
+  const stepRating =
+    document.getElementById(
+      "opening-step-rating"
+    );
+
+  const stepFinal =
+    document.getElementById(
+      "opening-step-final"
+    );
+
+
+  /* =======================================================
+     CONTENU ANIMATION
+     ======================================================= */
+
+  const animationText =
+    document.getElementById(
+      "opening-animation-text"
+    );
+
+  const animationRarity =
+    document.getElementById(
+      "animation-rarity"
+    );
+
+  const animationNationality =
+    document.getElementById(
+      "animation-nationality"
+    );
+
+  const animationClub =
+    document.getElementById(
+      "animation-club"
     );
 
   const animationRating =
@@ -101,16 +201,20 @@
       "animation-position"
     );
 
-  const animationNationality =
+
+  /* =======================================================
+     RÉVÉLATION
+     ======================================================= */
+
+  const revealedRarity =
     document.getElementById(
-      "animation-nationality"
+      "revealed-rarity"
     );
 
-  const animationText =
+  const revealedPlayerCard =
     document.getElementById(
-      "opening-animation-text"
+      "revealed-player-card"
     );
-
 
   const revealedRating =
     document.getElementById(
@@ -152,6 +256,11 @@
       "reveal-student-name"
     );
 
+
+  /* =======================================================
+     BOUTONS FIN
+     ======================================================= */
+
   const viewCollectionButton =
     document.getElementById(
       "view-student-collection"
@@ -169,7 +278,7 @@
 
 
   /* =======================================================
-     ÉTAT
+     ÉTAT JS
      ======================================================= */
 
   let teacherToken = null;
@@ -186,10 +295,22 @@
 
   let isOpening = false;
 
+  let introInterval = null;
+
 
   /* =======================================================
      OUTILS
      ======================================================= */
+
+  function sleep(ms) {
+    return new Promise(resolve => {
+      window.setTimeout(
+        resolve,
+        ms
+      );
+    });
+  }
+
 
   function safeNumber(
     value,
@@ -201,16 +322,6 @@
     return Number.isFinite(number)
       ? number
       : fallback;
-  }
-
-
-  function sleep(milliseconds) {
-    return new Promise(resolve => {
-      window.setTimeout(
-        resolve,
-        milliseconds
-      );
-    });
   }
 
 
@@ -242,14 +353,6 @@
   }
 
 
-  function setAnimationText(text) {
-    if (animationText) {
-      animationText.textContent =
-        text;
-    }
-  }
-
-
   /* =======================================================
      URL
      ======================================================= */
@@ -261,10 +364,14 @@
       );
 
     studentId =
-      params.get("studentId");
+      params.get(
+        "studentId"
+      );
 
     packType =
-      params.get("pack") ||
+      params.get(
+        "pack"
+      ) ||
       config.defaultPackType ||
       "standard";
   }
@@ -299,7 +406,7 @@
 
     } catch (error) {
       console.warn(
-        "Impossible de lire la session professeur.",
+        "Session professeur illisible.",
         error
       );
 
@@ -309,7 +416,7 @@
 
 
   /* =======================================================
-     ÉTATS VISUELS
+     ÉTATS D'ÉCRAN
      ======================================================= */
 
   function hideAllStates() {
@@ -366,7 +473,6 @@
 
     if (animationSection) {
       animationSection.hidden = false;
-
       animationSection.classList.add(
         "is-running"
       );
@@ -394,6 +500,8 @@
 
 
   function showError(message) {
+    stopIntroMessages();
+
     hideAllStates();
 
     document.body.classList.remove(
@@ -419,159 +527,134 @@
 
 
   /* =======================================================
-     CONTEXTE
+     GESTION DES ÉTAPES
      ======================================================= */
 
-  function renderOpeningContext(
-    context
-  ) {
-    const student =
-      context?.student || {};
-
-    const openings =
-      context?.openings ||
-      context?.stats ||
-      {};
-
-    const pack =
-      context?.pack || {};
-
-    const available =
-      safeNumber(
-        openings.available
-      );
-
-    const remainingPlayers =
-      safeNumber(
-        context?.availablePlayers
-      );
-
-    if (headerStudentName) {
-      headerStudentName.textContent =
-        student.name ||
-        "Élève";
-    }
-
-    if (packTypeLabel) {
-      let packName =
-        pack.name ||
-        pack.id ||
-        context?.packType ||
-        packType;
-
-      if (
-        String(packName)
-          .toLowerCase() ===
-        "standard"
-      ) {
-        packName =
-          "Pack Standard";
+  function hideAllSteps() {
+    [
+      stepIntro,
+      stepRarity,
+      stepIdentity,
+      stepRating,
+      stepFinal
+    ].forEach(step => {
+      if (step) {
+        step.classList.remove(
+          "is-active"
+        );
       }
-
-      packTypeLabel.textContent =
-        String(packName)
-          .toUpperCase();
-    }
-
-    if (readyDescription) {
-      readyDescription.textContent =
-        `${student.name || "L'élève"} va découvrir un nouveau joueur pour sa collection.`;
-    }
-
-    if (availableCount) {
-      availableCount.textContent =
-        available;
-    }
-
-    if (playersLeft) {
-      playersLeft.textContent =
-        remainingPlayers;
-    }
-
-    setDocumentTitle(
-      student.name ||
-      "Élève"
-    );
+    });
   }
 
 
-  async function loadOpeningContext() {
-    if (!teacherToken) {
-      showError(
-        "Connexion professeur requise."
-      );
-      return;
-    }
+  function showStep(step) {
+    hideAllSteps();
 
-    if (!studentId) {
-      showError(
-        "Aucun élève n'a été sélectionné."
-      );
-      return;
-    }
-
-    showLoading();
-
-    try {
+    if (step) {
       /*
-       * Grâce au nouveau api.js,
-       * cette réponse vient généralement
-       * directement du cache local.
+       * Petit reflow volontaire :
+       * permet à la transition CSS
+       * de repartir correctement.
        */
-      const context =
-        await api.getOpeningContext(
-          teacherToken,
-          studentId,
-          packType
-        );
+      void step.offsetWidth;
 
-      openingContext =
-        context;
-
-      const available =
-        safeNumber(
-          context?.openings
-            ?.available ??
-          context?.stats
-            ?.available
-        );
-
-      const availablePlayers =
-        safeNumber(
-          context?.availablePlayers
-        );
-
-      if (available < 1) {
-        showError(
-          "Cet élève n'a aucun opening disponible."
-        );
-        return;
-      }
-
-      if (availablePlayers < 1) {
-        showError(
-          "Il n'y a plus aucun joueur disponible dans la classe."
-        );
-        return;
-      }
-
-      renderOpeningContext(
-        context
-      );
-
-      showReady();
-
-    } catch (error) {
-      console.error(
-        "Erreur chargement opening :",
-        error
-      );
-
-      showError(
-        error?.message ||
-        "Impossible de préparer l'opening."
+      step.classList.add(
+        "is-active"
       );
     }
+  }
+
+
+  /* =======================================================
+     RARETÉ
+     ======================================================= */
+
+  function normalizeRarity(value) {
+    const rarity =
+      String(value || "")
+        .toLowerCase()
+        .trim();
+
+    if (
+      rarity === "legendary" ||
+      rarity === "légende" ||
+      rarity === "legende"
+    ) {
+      return "legendary";
+    }
+
+    if (
+      rarity === "gold" ||
+      rarity === "or"
+    ) {
+      return "gold";
+    }
+
+    if (
+      rarity === "silver" ||
+      rarity === "argent"
+    ) {
+      return "silver";
+    }
+
+    return "bronze";
+  }
+
+
+  function rarityLabel(value) {
+    const rarity =
+      normalizeRarity(value);
+
+    if (rarity === "legendary") {
+      return "LÉGENDE";
+    }
+
+    if (rarity === "gold") {
+      return "OR";
+    }
+
+    if (rarity === "silver") {
+      return "ARGENT";
+    }
+
+    return "BRONZE";
+  }
+
+
+  function clearRarityTheme() {
+    document.body.classList.remove(
+      "rarity-legendary",
+      "rarity-gold",
+      "rarity-silver",
+      "rarity-bronze"
+    );
+
+    if (animationSection) {
+      delete animationSection.dataset.rarity;
+    }
+  }
+
+
+  function applyRarityTheme(
+    rarityValue
+  ) {
+    clearRarityTheme();
+
+    const rarity =
+      normalizeRarity(
+        rarityValue
+      );
+
+    document.body.classList.add(
+      `rarity-${rarity}`
+    );
+
+    if (animationSection) {
+      animationSection.dataset.rarity =
+        rarity;
+    }
+
+    return rarity;
   }
 
 
@@ -606,10 +689,34 @@
 
 
   /* =======================================================
-     RESET ANIMATION
+     RESET
      ======================================================= */
 
-  function resetAnimationValues() {
+  function resetOpeningVisuals() {
+    clearRarityTheme();
+
+    hideAllSteps();
+
+    if (animationText) {
+      animationText.textContent =
+        "Le pack s'ouvre…";
+    }
+
+    if (animationRarity) {
+      animationRarity.textContent =
+        "?";
+    }
+
+    if (animationNationality) {
+      animationNationality.textContent =
+        "???";
+    }
+
+    if (animationClub) {
+      animationClub.textContent =
+        "???";
+    }
+
     if (animationRating) {
       animationRating.textContent =
         "?";
@@ -620,197 +727,393 @@
         "???";
     }
 
-    if (animationNationality) {
-      animationNationality.textContent =
-        "BEL AIR FC";
+    if (revealedRarity) {
+      revealedRarity.textContent =
+        "JOUEUR";
     }
 
-    setAnimationText(
-      "Le pack s'ouvre..."
-    );
+    if (revealedImage) {
+      revealedImage.hidden = true;
+      revealedImage.src = "";
+    }
+
+    if (revealedFallback) {
+      revealedFallback.hidden = true;
+    }
   }
 
 
   /* =======================================================
-     PRÉCHARGEMENT IMAGE
+     CONTEXTE OPENING
+     ======================================================= */
+
+  function renderOpeningContext(
+    context
+  ) {
+    const student =
+      context?.student || {};
+
+    const openings =
+      context?.openings ||
+      context?.stats ||
+      {};
+
+    const available =
+      safeNumber(
+        openings.available
+      );
+
+    const remainingPlayers =
+      safeNumber(
+        context?.availablePlayers
+      );
+
+    if (headerStudentName) {
+      headerStudentName.textContent =
+        student.name ||
+        "Élève";
+    }
+
+    if (readyDescription) {
+      readyDescription.textContent =
+        `${student.name || "L'élève"} va découvrir un nouveau joueur pour sa collection.`;
+    }
+
+    if (availableCount) {
+      availableCount.textContent =
+        available;
+    }
+
+    if (playersLeft) {
+      playersLeft.textContent =
+        remainingPlayers;
+    }
+
+    if (packTypeLabel) {
+      packTypeLabel.textContent =
+        packType === "standard"
+          ? "PACK STANDARD"
+          : String(packType)
+              .toUpperCase();
+    }
+
+    setDocumentTitle(
+      student.name ||
+      "Élève"
+    );
+  }
+
+
+  async function loadOpeningContext() {
+    if (!teacherToken) {
+      showError(
+        "Connexion professeur requise."
+      );
+
+      return;
+    }
+
+    if (!studentId) {
+      showError(
+        "Aucun élève n'a été sélectionné."
+      );
+
+      return;
+    }
+
+    showLoading();
+
+    try {
+      /*
+       * Avec le nouveau api.js,
+       * cette fonction utilise normalement
+       * le dashboard déjà en cache.
+       */
+      const context =
+        await api.getOpeningContext(
+          teacherToken,
+          studentId,
+          packType
+        );
+
+      openingContext =
+        context;
+
+      const available =
+        safeNumber(
+          context?.openings
+            ?.available ??
+          context?.stats
+            ?.available
+        );
+
+      const remainingPlayers =
+        safeNumber(
+          context?.availablePlayers
+        );
+
+      if (available < 1) {
+        showError(
+          "Cet élève n'a aucun opening disponible."
+        );
+
+        return;
+      }
+
+      if (remainingPlayers < 1) {
+        showError(
+          "Il n'y a plus aucun joueur disponible."
+        );
+
+        return;
+      }
+
+      renderOpeningContext(
+        context
+      );
+
+      showReady();
+
+    } catch (error) {
+      console.error(
+        "Erreur préparation opening :",
+        error
+      );
+
+      showError(
+        error?.message ||
+        "Impossible de préparer l'opening."
+      );
+    }
+  }
+
+
+  /* =======================================================
+     INTRO PENDANT QUE GOOGLE TRAVAILLE
+     ======================================================= */
+
+  function startIntroMessages() {
+    stopIntroMessages();
+
+    const messages = [
+      "Le pack s'ouvre…",
+      "Entrée dans le stade…",
+      "Les lumières s'allument…",
+      "Un joueur arrive…"
+    ];
+
+    let index = 0;
+
+    if (animationText) {
+      animationText.textContent =
+        messages[0];
+    }
+
+    introInterval =
+      window.setInterval(
+        () => {
+          index =
+            (index + 1) %
+            messages.length;
+
+          if (animationText) {
+            animationText.textContent =
+              messages[index];
+          }
+        },
+        450
+      );
+  }
+
+
+  function stopIntroMessages() {
+    if (introInterval) {
+      window.clearInterval(
+        introInterval
+      );
+
+      introInterval =
+        null;
+    }
+  }
+
+
+  /* =======================================================
+     PRÉCHARGER IMAGE
      ======================================================= */
 
   function preloadPlayerImage(
     player
   ) {
     if (!player?.image) {
-      return;
+      return Promise.resolve();
     }
 
-    const image =
-      new Image();
+    return new Promise(resolve => {
+      const image =
+        new Image();
 
-    image.src =
-      player.image;
-  }
+      let finished =
+        false;
 
-
-  /* =======================================================
-     ATTENDRE GOOGLE SANS BLOQUER L'ANIMATION
-     ======================================================= */
-
-  async function waitForOpeningResult(
-    serverPromise
-  ) {
-    /*
-     * Pendant que Google Apps Script
-     * fait le vrai tirage sécurisé,
-     * l'élève voit déjà l'animation.
-     */
-
-    const trackedPromise =
-      serverPromise.then(
-        result => ({
-          ok: true,
-          result: result
-        }),
-        error => ({
-          ok: false,
-          error: error
-        })
-      );
-
-    const messages = [
-      "Le pack s'ouvre...",
-      "Un joueur arrive...",
-      "Préparation de la carte...",
-      "Le stade s'illumine...",
-      "Encore un instant..."
-    ];
-
-    let messageIndex = 0;
-
-    while (true) {
-      const outcome =
-        await Promise.race([
-          trackedPromise,
-
-          sleep(420).then(
-            () => null
-          )
-        ]);
-
-      if (outcome) {
-        if (!outcome.ok) {
-          throw outcome.error;
+      function finish() {
+        if (finished) {
+          return;
         }
 
-        preloadPlayerImage(
-          outcome.result?.player
-        );
+        finished = true;
 
-        return outcome.result;
+        resolve();
       }
 
-      setAnimationText(
-        messages[
-          messageIndex %
-          messages.length
-        ]
-      );
+      image.onload =
+        finish;
 
-      messageIndex++;
-    }
+      image.onerror =
+        finish;
+
+      image.src =
+        player.image;
+
+      /*
+       * On ne bloque jamais l'opening
+       * plus de 1,5 seconde pour une image.
+       */
+      window.setTimeout(
+        finish,
+        1500
+      );
+    });
   }
 
 
   /* =======================================================
-     RÉVÉLATION RAPIDE
+     ÉTAPE RARETÉ
      ======================================================= */
 
-  async function runOpeningAnimation(
+  async function revealRarity(
     player
   ) {
-    const reducedMotion =
-      prefersReducedMotion();
+    const rarity =
+      applyRarityTheme(
+        player.rarity
+      );
 
-    if (reducedMotion) {
-      if (animationRating) {
-        animationRating.textContent =
-          player.rating || "?";
-      }
-
-      if (animationPosition) {
-        animationPosition.textContent =
-          player.position || "?";
-      }
-
-      if (animationNationality) {
-        animationNationality.textContent =
-          player.nationality ||
-          "BEL AIR FC";
-      }
-
-      await sleep(250);
-
-      return;
+    if (animationRarity) {
+      animationRarity.textContent =
+        rarityLabel(
+          rarity
+        );
     }
 
+    if (revealedRarity) {
+      revealedRarity.textContent =
+        rarityLabel(
+          rarity
+        );
+    }
 
-    /* NOTE */
-
-    setAnimationText(
-      "La note..."
+    showStep(
+      stepRarity
     );
-
-    if (animationRating) {
-      animationRating.textContent =
-        player.rating || "?";
-    }
 
     triggerFlash();
 
-    await sleep(450);
-
-
-    /* POSTE */
-
-    setAnimationText(
-      "Le poste..."
-    );
-
-    if (animationPosition) {
-      animationPosition.textContent =
-        player.position || "?";
+    if (
+      rarity === "legendary"
+    ) {
+      await sleep(
+        TIMINGS.rarity + 180
+      );
+    } else {
+      await sleep(
+        TIMINGS.rarity
+      );
     }
+  }
 
-    await sleep(450);
 
+  /* =======================================================
+     CLUB + NATIONALITÉ
+     ======================================================= */
 
-    /* NATIONALITÉ */
-
-    setAnimationText(
-      "Dernier indice..."
-    );
-
+  async function revealIdentity(
+    player
+  ) {
     if (animationNationality) {
       animationNationality.textContent =
         player.nationality ||
-        "BEL AIR FC";
+        "INCONNUE";
     }
 
-    await sleep(500);
+    if (animationClub) {
+      animationClub.textContent =
+        player.club ||
+        "CLUB INCONNU";
+    }
 
-
-    /* FINAL */
-
-    setAnimationText(
-      "C'est parti !"
+    showStep(
+      stepIdentity
     );
 
-    triggerFlash();
-
-    await sleep(250);
+    await sleep(
+      TIMINGS.identity
+    );
   }
 
 
   /* =======================================================
-     RÉVÉLATION CARTE
+     NOTE + POSTE
+     ======================================================= */
+
+  async function revealRating(
+    player
+  ) {
+    if (animationRating) {
+      animationRating.textContent =
+        safeNumber(
+          player.rating,
+          "?"
+        );
+    }
+
+    if (animationPosition) {
+      animationPosition.textContent =
+        player.position ||
+        "?";
+    }
+
+    showStep(
+      stepRating
+    );
+
+    triggerFlash();
+
+    await sleep(
+      TIMINGS.rating
+    );
+  }
+
+
+  /* =======================================================
+     FINAL
+     ======================================================= */
+
+  async function revealFinalStage() {
+    showStep(
+      stepFinal
+    );
+
+    triggerFlash();
+
+    await sleep(
+      TIMINGS.final
+    );
+  }
+
+
+  /* =======================================================
+     RENDU JOUEUR
      ======================================================= */
 
   function renderRevealedPlayer(
@@ -822,6 +1125,18 @@
     const student =
       result?.student || {};
 
+    const rarity =
+      applyRarityTheme(
+        player.rarity
+      );
+
+    if (revealedRarity) {
+      revealedRarity.textContent =
+        rarityLabel(
+          rarity
+        );
+    }
+
     if (revealedRating) {
       revealedRating.textContent =
         safeNumber(
@@ -832,7 +1147,8 @@
 
     if (revealedPosition) {
       revealedPosition.textContent =
-        player.position || "-";
+        player.position ||
+        "-";
     }
 
     if (revealedName) {
@@ -856,7 +1172,9 @@
     if (revealStudentName) {
       revealStudentName.textContent =
         student.name ||
-        openingContext?.student?.name ||
+        openingContext
+          ?.student
+          ?.name ||
         "Élève";
     }
 
@@ -864,39 +1182,43 @@
     /* IMAGE */
 
     if (revealedImage) {
-      revealedImage.src =
-        player.image || "";
-
-      revealedImage.alt =
-        player.name ||
-        "Joueur";
-
-      revealedImage.hidden =
-        !player.image;
-
-      revealedImage.onerror =
-        () => {
-          revealedImage.hidden =
-            true;
-
-          if (revealedFallback) {
-            revealedFallback.hidden =
-              false;
-
-            revealedFallback.textContent =
-              getInitials(
-                player.name
-              ) ||
-              "BA";
-          }
-        };
-
       if (player.image) {
+        revealedImage.src =
+          player.image;
+
+        revealedImage.alt =
+          player.name ||
+          "Joueur";
+
+        revealedImage.hidden =
+          false;
+
         if (revealedFallback) {
           revealedFallback.hidden =
             true;
         }
+
+        revealedImage.onerror =
+          () => {
+            revealedImage.hidden =
+              true;
+
+            if (revealedFallback) {
+              revealedFallback.hidden =
+                false;
+
+              revealedFallback.textContent =
+                getInitials(
+                  player.name
+                ) ||
+                "BA";
+            }
+          };
+
       } else {
+        revealedImage.hidden =
+          true;
+
         if (revealedFallback) {
           revealedFallback.hidden =
             false;
@@ -925,23 +1247,27 @@
     }
 
 
-    /* AUTRE OPENING */
+    /* OPENINGS RESTANTS */
 
     const remaining =
       safeNumber(
-        result?.openings?.available ??
-        result?.stats?.available
+        result?.openings
+          ?.available ??
+        result?.stats
+          ?.available
       );
 
     if (openAnotherButton) {
       openAnotherButton.hidden =
         remaining < 1;
 
-      if (remaining > 0) {
+      if (remaining > 1) {
         openAnotherButton.textContent =
-          remaining > 1
-            ? `Ouvrir le suivant · ${remaining} restants`
-            : "Ouvrir le suivant";
+          `Ouvrir le suivant · ${remaining} restants`;
+
+      } else if (remaining === 1) {
+        openAnotherButton.textContent =
+          "Ouvrir le suivant";
       }
     }
 
@@ -953,7 +1279,7 @@
 
 
   /* =======================================================
-     MISE À JOUR LOCALE APRÈS OPENING
+     CONTEXTE LOCAL APRÈS TIRAGE
      ======================================================= */
 
   function updateContextAfterOpening(
@@ -977,28 +1303,25 @@
     }
 
     /*
-     * Pas besoin de demander à Google
-     * combien de joueurs restent.
-     * Un opening = un joueur en moins.
+     * Chaque opening attribue exactement
+     * un joueur.
+     *
+     * Donc pas besoin de redemander
+     * à Google combien il en reste.
      */
-
-    if (
-      openingContext.availablePlayers !==
-      undefined
-    ) {
-      openingContext.availablePlayers =
-        Math.max(
-          0,
-          safeNumber(
-            openingContext.availablePlayers
-          ) - 1
-        );
-    }
+    openingContext.availablePlayers =
+      Math.max(
+        0,
+        safeNumber(
+          openingContext
+            ?.availablePlayers
+        ) - 1
+      );
   }
 
 
   /* =======================================================
-     TIRAGE
+     OPENING PRINCIPAL
      ======================================================= */
 
   async function performOpening() {
@@ -1010,10 +1333,18 @@
       return;
     }
 
-    isOpening = true;
+    isOpening =
+      true;
 
     openingResult =
       null;
+
+    resetOpeningVisuals();
+
+
+    /* -------------------------------------------------------
+       BOUTON
+       ------------------------------------------------------- */
 
     if (packButton) {
       packButton.disabled =
@@ -1026,15 +1357,30 @@
 
 
     /*
-     * IMPORTANT :
+     * =====================================================
+     * MOMENT IMPORTANT
+     * =====================================================
      *
-     * On lance la requête Google ET
-     * l'animation exactement au même moment.
+     * On affiche le tunnel AVANT d'attendre Google.
      *
-     * L'utilisateur ne regarde donc plus
-     * un bouton figé pendant que Google charge.
+     * Donc le clic semble instantané.
      */
 
+    showAnimation();
+
+    showStep(
+      stepIntro
+    );
+
+    startIntroMessages();
+
+    triggerFlash();
+
+
+    /*
+     * L'appel Google démarre immédiatement
+     * en parallèle de l'animation.
+     */
     const serverPromise =
       api.performOpening(
         teacherToken,
@@ -1043,26 +1389,39 @@
       );
 
 
-    resetAnimationValues();
-
-    showAnimation();
-
-    triggerFlash();
+    /*
+     * Minimum 650 ms de tunnel.
+     *
+     * Si Google répond en 300 ms :
+     * on garde quand même une petite intro.
+     *
+     * Si Google répond en 1,5 s :
+     * le tunnel continue pendant ce temps.
+     */
+    const introMinimumPromise =
+      sleep(
+        prefersReducedMotion()
+          ? 100
+          : TIMINGS.minimumIntro
+      );
 
 
     try {
-      /*
-       * Google travaille pendant
-       * l'introduction visuelle.
-       */
+      const [
+        result
+      ] =
+        await Promise.all([
+          serverPromise,
+          introMinimumPromise
+        ]);
 
-      const result =
-        await waitForOpeningResult(
-          serverPromise
-        );
+
+      stopIntroMessages();
+
 
       openingResult =
         result;
+
 
       updateContextAfterOpening(
         result
@@ -1070,22 +1429,106 @@
 
 
       /*
-       * Maintenant que le joueur est connu,
-       * on révèle rapidement ses informations.
+       * On commence immédiatement à charger
+       * la photo pendant que les indices
+       * sont révélés.
+       */
+      const imagePromise =
+        preloadPlayerImage(
+          result.player
+        );
+
+
+      /*
+       * ===================================================
+       * MODE ACCESSIBILITÉ
+       * ===================================================
        */
 
-      await runOpeningAnimation(
-        result.player || {}
+      if (
+        prefersReducedMotion()
+      ) {
+        renderRevealedPlayer(
+          result
+        );
+
+        await imagePromise;
+
+        showReveal();
+
+        return;
+      }
+
+
+      /*
+       * ===================================================
+       * RARETÉ
+       * ===================================================
+       */
+
+      await revealRarity(
+        result.player
       );
 
+
+      /*
+       * ===================================================
+       * NATIONALITÉ + CLUB
+       * ===================================================
+       */
+
+      await revealIdentity(
+        result.player
+      );
+
+
+      /*
+       * ===================================================
+       * NOTE + POSTE
+       * ===================================================
+       */
+
+      await revealRating(
+        result.player
+      );
+
+
+      /*
+       * ===================================================
+       * FINAL
+       * ===================================================
+       */
+
+      await revealFinalStage();
+
+
+      /*
+       * La photo a eu environ 2 secondes
+       * pour se charger pendant l'animation.
+       */
+      await imagePromise;
+
+
+      /*
+       * ===================================================
+       * JOUEUR
+       * ===================================================
+       */
 
       renderRevealedPlayer(
         result
       );
 
+      await sleep(
+        TIMINGS.revealDelay
+      );
+
       showReveal();
 
+
     } catch (error) {
+      stopIntroMessages();
+
       console.error(
         "Erreur pendant l'opening :",
         error
@@ -1096,8 +1539,10 @@
         "Impossible d'effectuer cet opening."
       );
 
+
     } finally {
-      isOpening = false;
+      isOpening =
+        false;
 
       if (packButton) {
         packButton.disabled =
@@ -1125,9 +1570,11 @@
 
     const remaining =
       safeNumber(
-        openingResult?.openings
+        openingResult
+          ?.openings
           ?.available ??
-        openingResult?.stats
+        openingResult
+          ?.stats
           ?.available
       );
 
@@ -1135,19 +1582,18 @@
       return;
     }
 
+
     /*
-     * Ancienne version :
-     * redemandait getOpeningContext()
-     * à Google.
+     * Pas de requête Google ici.
      *
-     * Nouvelle version :
-     * tout est déjà connu localement.
+     * On possède déjà les nouvelles
+     * informations localement.
      */
 
     openingResult =
       null;
 
-    resetAnimationValues();
+    resetOpeningVisuals();
 
     renderOpeningContext(
       openingContext
@@ -1174,7 +1620,7 @@
 
 
   /* =======================================================
-     PROTECTION FERMETURE
+     PROTECTION SI ON QUITTE PENDANT LE TIRAGE
      ======================================================= */
 
   window.addEventListener(
@@ -1193,7 +1639,7 @@
 
 
   /* =======================================================
-     INITIALISATION
+     INIT
      ======================================================= */
 
   async function init() {
@@ -1209,6 +1655,8 @@
 
       return;
     }
+
+    resetOpeningVisuals();
 
     await loadOpeningContext();
   }
