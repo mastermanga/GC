@@ -1,54 +1,44 @@
-/* =========================================================
-   FC CLASSE — API.JS
+(() => {
+  "use strict";
 
-   Couche de communication entre l'interface et les données.
+  const config = window.FC_CONFIG;
 
-   MODE ACTUEL :
-   → mock-data.js + localStorage
-
-   MODE FINAL :
-   → Google Apps Script + Google Sheets
-
-   Les autres fichiers ne doivent PAS accéder directement
-   à FC_MOCK_DATA.
-   Ils doivent passer uniquement par FC_API.
-   ========================================================= */
-
-window.FC_API = (() => {
-  const config = window.FC_CONFIG || {};
-
-  const MOCK_STORAGE_KEY = "fcClasse_mockDatabase_v1";
-
-  /*
-   * Mot de passe UNIQUEMENT pour le mode démonstration.
-   *
-   * Il sera supprimé du fonctionnement réel lorsque
-   * Google Apps Script sera connecté.
-   */
-  const MOCK_TEACHER_PASSWORD = "prof";
-
-
-  /* =======================================================
-     OUTILS
-     ======================================================= */
-
-  function clone(value) {
-    return JSON.parse(JSON.stringify(value));
+  if (!config) {
+    throw new Error("FC_CONFIG introuvable.");
   }
 
+  // =====================================================
+  // CONFIG CACHE
+  // =====================================================
 
-  function uid(prefix = "id") {
-    return (
-      prefix +
-      "_" +
-      Date.now().toString(36) +
-      "_" +
-      Math.random().toString(36).slice(2, 8)
-    );
+  const PUBLIC_CACHE_KEY = "bafc_public_cache_v1";
+  const TEACHER_CACHE_KEY = "bafc_teacher_cache_v1";
+
+  const REFRESH_DELAY = 15000; // 15 sec
+  const PROFILE_REFRESH_DELAY = 30000; // 30 sec
+
+  const inflight = {
+    students: null,
+    config: null,
+    dashboard: null,
+    profiles: {},
+    searches: {}
+  };
+
+
+  // =====================================================
+  // OUTILS
+  // =====================================================
+
+  function clone(data) {
+    return JSON.parse(JSON.stringify(data));
   }
 
+  function now() {
+    return Date.now();
+  }
 
-  function normalizeText(value) {
+  function normalize(value) {
     return String(value || "")
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
@@ -56,1108 +46,160 @@ window.FC_API = (() => {
       .trim();
   }
 
-
-  function safeNumber(value, fallback = 0) {
-    const number = Number(value);
-
-    return Number.isFinite(number)
-      ? number
-      : fallback;
-  }
-
-
-  function nowISO() {
-    return new Date().toISOString();
-  }
-
-
-  /* =======================================================
-     BASE MOCK
-     ======================================================= */
-
-  function createFreshMockDatabase() {
-    if (!window.FC_MOCK_DATA) {
-      throw new Error(
-        "FC_MOCK_DATA est introuvable. Vérifie que mock-data.js est chargé avant api.js."
-      );
-    }
-
-    return clone(window.FC_MOCK_DATA);
-  }
-
-
-  function normalizeMockDatabase(database) {
-    const db = database || {};
-
-    db.config = db.config || {};
-
-    db.config.meritsPerOpening = Math.max(
-      1,
-      safeNumber(db.config.meritsPerOpening, 10)
-    );
-
-    db.packTypes = Array.isArray(db.packTypes)
-      ? db.packTypes
-      : [];
-
-    db.students = Array.isArray(db.students)
-      ? db.students
-      : [];
-
-    db.players = Array.isArray(db.players)
-      ? db.players
-      : [];
-
-    db.collections = Array.isArray(db.collections)
-      ? db.collections
-      : [];
-
-    db.openings = Array.isArray(db.openings)
-      ? db.openings
-      : [];
-
-    return db;
-  }
-
-
-  function loadMockDatabase() {
+  function loadPublicCache() {
     try {
-      const saved = localStorage.getItem(MOCK_STORAGE_KEY);
+      return JSON.parse(
+        localStorage.getItem(PUBLIC_CACHE_KEY)
+      ) || {
+        students: null,
+        studentsAt: 0,
 
-      if (!saved) {
-        const fresh = normalizeMockDatabase(
-          createFreshMockDatabase()
-        );
+        config: null,
+        configAt: 0,
 
-        saveMockDatabase(fresh);
-
-        return fresh;
-      }
-
-      return normalizeMockDatabase(
-        JSON.parse(saved)
-      );
-
+        profiles: {},
+        searches: {}
+      };
     } catch (error) {
-      console.warn(
-        "Impossible de charger les données de démonstration.",
-        error
-      );
-
-      const fresh = normalizeMockDatabase(
-        createFreshMockDatabase()
-      );
-
-      saveMockDatabase(fresh);
-
-      return fresh;
-    }
-  }
-
-
-  function saveMockDatabase(database) {
-    localStorage.setItem(
-      MOCK_STORAGE_KEY,
-      JSON.stringify(database)
-    );
-  }
-
-
-  function resetMockDatabase() {
-    localStorage.removeItem(MOCK_STORAGE_KEY);
-
-    return loadMockDatabase();
-  }
-
-
-  /* =======================================================
-     CALCUL DES OPENINGS
-     ======================================================= */
-
-  function getOpeningStats(database, studentId) {
-    const student = database.students.find(
-      item => item.id === studentId
-    );
-
-    if (!student) {
       return {
-        earned: 0,
-        completed: 0,
-        available: 0,
-        threshold: database.config.meritsPerOpening
+        students: null,
+        studentsAt: 0,
+        config: null,
+        configAt: 0,
+        profiles: {},
+        searches: {}
       };
     }
-
-    const threshold = Math.max(
-      1,
-      safeNumber(
-        database.config.meritsPerOpening,
-        10
-      )
-    );
-
-    /*
-     * Les mérites ne sont jamais dépensés.
-     *
-     * Exemple :
-     *
-     * 27 mérites
-     * seuil = 10
-     *
-     * floor(27 / 10) = 2 openings gagnés.
-     */
-
-    const earned = Math.floor(
-      safeNumber(student.merits) / threshold
-    );
-
-    const completed = database.openings.filter(
-      opening => opening.studentId === studentId
-    ).length;
-
-    const available = Math.max(
-      0,
-      earned - completed
-    );
-
-    return {
-      earned,
-      completed,
-      available,
-      threshold
-    };
   }
 
-
-  /* =======================================================
-     COLLECTIONS
-     ======================================================= */
-
-  function getStudentCollection(database, studentId) {
-    const collectionRows = database.collections.filter(
-      item => item.studentId === studentId
-    );
-
-    return collectionRows
-      .map(row => {
-        const player = database.players.find(
-          item => Number(item.eaId) === Number(row.eaId)
-        );
-
-        if (!player) {
-          return null;
-        }
-
-        return {
-          ...clone(player),
-
-          collectionId: row.id,
-
-          openingId: row.openingId || null,
-
-          obtainedAt: row.obtainedAt || null
-        };
-      })
-      .filter(Boolean)
-      .sort((a, b) => {
-        return (
-          safeNumber(b.rating) -
-            safeNumber(a.rating) ||
-          String(a.name).localeCompare(
-            String(b.name),
-            "fr"
-          )
-        );
-      });
-  }
-
-
-  function getCollectionOwner(database, eaId) {
-    const row = database.collections.find(
-      item => Number(item.eaId) === Number(eaId)
-    );
-
-    if (!row) {
-      return null;
-    }
-
-    return database.students.find(
-      student => student.id === row.studentId
-    ) || null;
-  }
-
-
-  function isPlayerAvailable(database, eaId) {
-    return !database.collections.some(
-      item => Number(item.eaId) === Number(eaId)
-    );
-  }
-
-
-  /* =======================================================
-     FORMAT PUBLIC D'UN ÉLÈVE
-     ======================================================= */
-
-  function buildStudentSummary(database, student) {
-    const collection = getStudentCollection(
-      database,
-      student.id
-    );
-
-    const openings = getOpeningStats(
-      database,
-      student.id
-    );
-
-    return {
-      id: student.id,
-
-      name: student.name,
-
-      merits: safeNumber(student.merits),
-
-      collectionCount: collection.length,
-
-      openings
-    };
-  }
-
-
-  function buildStudentDetails(database, student) {
-    return {
-      ...buildStudentSummary(
-        database,
-        student
-      ),
-
-      collection: getStudentCollection(
-        database,
-        student.id
-      )
-    };
-  }
-
-
-  /* =======================================================
-     RECHERCHE ÉLÈVE — MOCK
-     ======================================================= */
-
-  function mockSearchStudents(query) {
-    const database = loadMockDatabase();
-
-    const search = normalizeText(query);
-
-    if (
-      search.length <
-      (config.minimumSearchLength || 2)
-    ) {
-      return [];
-    }
-
-    return database.students
-
-      .filter(student => {
-        if (student.active === false) {
-          return false;
-        }
-
-        return normalizeText(
-          student.name
-        ).includes(search);
-      })
-
-      .sort((a, b) => {
-        const aName = normalizeText(a.name);
-        const bName = normalizeText(b.name);
-
-        /*
-         * Les noms commençant exactement par
-         * la recherche apparaissent en premier.
-         */
-
-        const aStart = aName.startsWith(search)
-          ? 0
-          : 1;
-
-        const bStart = bName.startsWith(search)
-          ? 0
-          : 1;
-
-        return (
-          aStart -
-            bStart ||
-          aName.localeCompare(
-            bName,
-            "fr"
-          )
-        );
-      })
-
-      .slice(0, 10)
-
-      .map(student =>
-        buildStudentSummary(
-          database,
-          student
-        )
+  function savePublicCache() {
+    try {
+      localStorage.setItem(
+        PUBLIC_CACHE_KEY,
+        JSON.stringify(publicCache)
       );
-  }
-
-
-  function mockGetStudents() {
-    const database = loadMockDatabase();
-
-    return database.students
-      .filter(
-        student => student.active !== false
-      )
-      .map(student =>
-        buildStudentSummary(
-          database,
-          student
-        )
-      )
-      .sort((a, b) =>
-        a.name.localeCompare(
-          b.name,
-          "fr"
-        )
-      );
-  }
-
-
-  function mockGetStudent(studentId) {
-    const database = loadMockDatabase();
-
-    const student = database.students.find(
-      item =>
-        item.id === studentId &&
-        item.active !== false
-    );
-
-    if (!student) {
-      throw new Error(
-        "Élève introuvable."
-      );
-    }
-
-    return buildStudentDetails(
-      database,
-      student
-    );
-  }
-
-
-  function mockGetPublicConfig() {
-    const database = loadMockDatabase();
-
-    return {
-      meritsPerOpening:
-        database.config.meritsPerOpening,
-
-      packTypes:
-        database.packTypes
-          .filter(pack => pack.enabled)
-          .map(pack => ({
-            id: pack.id,
-            name: pack.name
-          }))
-    };
-  }
-
-
-  /* =======================================================
-     AUTHENTIFICATION PROF — MOCK
-     ======================================================= */
-
-  function createMockTeacherSession() {
-    return (
-      "mock_teacher_" +
-      Date.now().toString(36) +
-      "_" +
-      Math.random()
-        .toString(36)
-        .slice(2)
-    );
-  }
-
-
-  function assertMockTeacher(token) {
-    if (
-      !String(token || "")
-        .startsWith("mock_teacher_")
-    ) {
-      throw new Error(
-        "Session professeur invalide."
+    } catch (error) {
+      console.warn(
+        "Impossible de sauvegarder le cache public.",
+        error
       );
     }
   }
 
-
-  function mockTeacherLogin(password) {
-    if (
-      String(password) !==
-      MOCK_TEACHER_PASSWORD
-    ) {
-      throw new Error(
-        "Mot de passe incorrect."
-      );
+  function loadTeacherCache() {
+    try {
+      return JSON.parse(
+        sessionStorage.getItem(TEACHER_CACHE_KEY)
+      ) || {
+        token: null,
+        dashboard: null,
+        dashboardAt: 0
+      };
+    } catch (error) {
+      return {
+        token: null,
+        dashboard: null,
+        dashboardAt: 0
+      };
     }
-
-    return {
-      token: createMockTeacherSession(),
-
-      teacher: {
-        name: "Professeur"
-      }
-    };
   }
 
-
-  /* =======================================================
-     TABLEAU DE BORD PROF — MOCK
-     ======================================================= */
-
-  function mockGetTeacherDashboard(token) {
-    assertMockTeacher(token);
-
-    const database = loadMockDatabase();
-
-    const students = database.students
-      .filter(
-        student => student.active !== false
-      )
-      .map(student =>
-        buildStudentSummary(
-          database,
-          student
-        )
-      )
-      .sort((a, b) =>
-        a.name.localeCompare(
-          b.name,
-          "fr"
-        )
+  function saveTeacherCache() {
+    try {
+      sessionStorage.setItem(
+        TEACHER_CACHE_KEY,
+        JSON.stringify(teacherCache)
       );
-
-    const assignedPlayerIds = new Set(
-      database.collections.map(
-        item => Number(item.eaId)
-      )
-    );
-
-    return {
-      config: {
-        meritsPerOpening:
-          database.config.meritsPerOpening
-      },
-
-      students,
-
-      stats: {
-        students:
-          students.length,
-
-        players:
-          database.players.length,
-
-        assignedPlayers:
-          assignedPlayerIds.size,
-
-        availablePlayers:
-          Math.max(
-            0,
-            database.players.length -
-              assignedPlayerIds.size
-          ),
-
-        openings:
-          database.openings.length
-      },
-
-      packTypes:
-        clone(database.packTypes)
-    };
-  }
-
-
-  /* =======================================================
-     MODIFICATION MÉRITES — MOCK
-     ======================================================= */
-
-  function mockUpdateStudentMerits(
-    token,
-    studentId,
-    merits
-  ) {
-    assertMockTeacher(token);
-
-    const database = loadMockDatabase();
-
-    const student = database.students.find(
-      item => item.id === studentId
-    );
-
-    if (!student) {
-      throw new Error(
-        "Élève introuvable."
+    } catch (error) {
+      console.warn(
+        "Impossible de sauvegarder le cache prof.",
+        error
       );
     }
-
-    const value = Math.max(
-      0,
-      Math.floor(
-        safeNumber(merits)
-      )
-    );
-
-    /*
-     * On écrit directement le nombre de mérites.
-     *
-     * Ce n'est PAS un système +1 / -1 obligatoire.
-     * Le professeur saisira par exemple directement :
-     *
-     * 27
-     */
-
-    student.merits = value;
-
-    saveMockDatabase(database);
-
-    return buildStudentSummary(
-      database,
-      student
-    );
   }
 
-
-  /* =======================================================
-     MODIFICATION DU SEUIL — MOCK
-     ======================================================= */
-
-  function mockUpdateMeritsPerOpening(
-    token,
-    value
-  ) {
-    assertMockTeacher(token);
-
-    const database = loadMockDatabase();
-
-    const threshold = Math.max(
-      1,
-      Math.floor(
-        safeNumber(value, 10)
-      )
+  function syncError(error) {
+    console.error(
+      "Erreur de synchronisation Bel Air FC :",
+      error
     );
 
-    database.config.meritsPerOpening =
-      threshold;
-
-    saveMockDatabase(database);
-
-    return {
-      meritsPerOpening:
-        threshold
-    };
-  }
-
-
-  /* =======================================================
-     AJOUT D'UN ÉLÈVE — MOCK
-     ======================================================= */
-
-  function mockCreateStudent(
-    token,
-    name
-  ) {
-    assertMockTeacher(token);
-
-    const database = loadMockDatabase();
-
-    const cleanName = String(name || "")
-      .trim();
-
-    if (!cleanName) {
-      throw new Error(
-        "Le nom de l'élève est obligatoire."
-      );
-    }
-
-    const duplicate =
-      database.students.some(
-        student =>
-          normalizeText(student.name) ===
-          normalizeText(cleanName)
-      );
-
-    if (duplicate) {
-      throw new Error(
-        "Cet élève existe déjà."
-      );
-    }
-
-    const student = {
-      id: uid("eleve"),
-      name: cleanName,
-      merits: 0,
-      active: true
-    };
-
-    database.students.push(student);
-
-    saveMockDatabase(database);
-
-    return buildStudentSummary(
-      database,
-      student
-    );
-  }
-
-
-  /* =======================================================
-     SUPPRESSION / ARCHIVAGE ÉLÈVE — MOCK
-     ======================================================= */
-
-  function mockArchiveStudent(
-    token,
-    studentId
-  ) {
-    assertMockTeacher(token);
-
-    const database = loadMockDatabase();
-
-    const student = database.students.find(
-      item => item.id === studentId
-    );
-
-    if (!student) {
-      throw new Error(
-        "Élève introuvable."
-      );
-    }
-
-    /*
-     * On ne supprime pas réellement l'élève,
-     * afin de conserver l'historique de ses openings.
-     */
-
-    student.active = false;
-
-    saveMockDatabase(database);
-
-    return {
-      success: true
-    };
-  }
-
-
-  /* =======================================================
-     TIRAGE D'UN JOUEUR — MOCK
-     ======================================================= */
-
-  function getPlayerWeight(player) {
-    /*
-     * Probabilités provisoires pour le mode démo.
-     *
-     * Les très grosses notes sont plus difficiles
-     * à obtenir.
-     *
-     * Plus tard, ces règles seront gérées
-     * par les types de packs côté serveur.
-     */
-
-    const rating =
-      safeNumber(player.rating);
-
-    if (rating >= 90) {
-      return 1;
-    }
-
-    if (rating >= 88) {
-      return 2;
-    }
-
-    if (rating >= 86) {
-      return 4;
-    }
-
-    if (rating >= 84) {
-      return 6;
-    }
-
-    if (rating >= 80) {
-      return 8;
-    }
-
-    return 10;
-  }
-
-
-  function randomWeightedPlayer(players) {
-    if (!players.length) {
-      return null;
-    }
-
-    const weighted = players.map(
-      player => ({
-        player,
-        weight: getPlayerWeight(player)
+    window.dispatchEvent(
+      new CustomEvent("bafc-sync-error", {
+        detail: error
       })
     );
-
-    const total = weighted.reduce(
-      (sum, item) =>
-        sum + item.weight,
-      0
-    );
-
-    let random = Math.random() * total;
-
-    for (const item of weighted) {
-      random -= item.weight;
-
-      if (random <= 0) {
-        return item.player;
-      }
-    }
-
-    return weighted[
-      weighted.length - 1
-    ].player;
   }
 
 
-  function mockGetOpeningContext(
-    token,
-    studentId,
-    packType
-  ) {
-    assertMockTeacher(token);
-
-    const database = loadMockDatabase();
-
-    const student = database.students.find(
-      item =>
-        item.id === studentId &&
-        item.active !== false
-    );
-
-    if (!student) {
-      throw new Error(
-        "Élève introuvable."
-      );
-    }
-
-    const selectedPack =
-      database.packTypes.find(
-        pack =>
-          pack.id === packType &&
-          pack.enabled
-      );
-
-    if (!selectedPack) {
-      throw new Error(
-        "Ce pack n'est pas disponible."
-      );
-    }
-
-    const openings = getOpeningStats(
-      database,
-      studentId
-    );
-
-    const availablePlayers =
-      database.players.filter(
-        player =>
-          isPlayerAvailable(
-            database,
-            player.eaId
-          )
-      );
-
-    return {
-      student:
-        buildStudentSummary(
-          database,
-          student
-        ),
-
-      pack: clone(selectedPack),
-
-      openings,
-
-      availablePlayers:
-        availablePlayers.length
-    };
-  }
+  let publicCache = loadPublicCache();
+  let teacherCache = loadTeacherCache();
 
 
-  function mockPerformOpening(
-    token,
-    studentId,
-    packType
-  ) {
-    assertMockTeacher(token);
-
-    const database = loadMockDatabase();
-
-    const student = database.students.find(
-      item =>
-        item.id === studentId &&
-        item.active !== false
-    );
-
-    if (!student) {
-      throw new Error(
-        "Élève introuvable."
-      );
-    }
-
-    const selectedPack =
-      database.packTypes.find(
-        pack =>
-          pack.id === packType &&
-          pack.enabled
-      );
-
-    if (!selectedPack) {
-      throw new Error(
-        "Ce pack n'est pas disponible."
-      );
-    }
-
-    const stats = getOpeningStats(
-      database,
-      studentId
-    );
-
-    if (stats.available < 1) {
-      throw new Error(
-        "Cet élève n'a aucun opening disponible."
-      );
-    }
-
-    /*
-     * JOUEURS UNIQUES DANS TOUTE LA CLASSE.
-     */
-
-    const availablePlayers =
-      database.players.filter(
-        player =>
-          isPlayerAvailable(
-            database,
-            player.eaId
-          )
-      );
-
-    if (!availablePlayers.length) {
-      throw new Error(
-        "Il n'y a plus aucun joueur disponible."
-      );
-    }
-
-    const player =
-      randomWeightedPlayer(
-        availablePlayers
-      );
-
-    if (!player) {
-      throw new Error(
-        "Impossible d'effectuer le tirage."
-      );
-    }
-
-    const openingId =
-      uid("opening");
-
-    const date =
-      nowISO();
-
-    /*
-     * On crée d'abord l'historique d'opening.
-     */
-
-    database.openings.push({
-      id: openingId,
-
-      studentId,
-
-      packType:
-        selectedPack.id,
-
-      eaId:
-        player.eaId,
-
-      createdAt:
-        date
-    });
-
-    /*
-     * Puis on attribue définitivement
-     * le joueur à cet élève.
-     */
-
-    database.collections.push({
-      id:
-        uid("collection"),
-
-      studentId,
-
-      eaId:
-        player.eaId,
-
-      openingId,
-
-      obtainedAt:
-        date
-    });
-
-    /*
-     * IMPORTANT :
-     *
-     * student.merits NE CHANGE PAS.
-     *
-     * Seul le nombre d'openings effectués
-     * augmente grâce à l'historique ci-dessus.
-     */
-
-    saveMockDatabase(database);
-
-    return {
-      openingId,
-
-      pack:
-        clone(selectedPack),
-
-      player:
-        clone(player),
-
-      student:
-        buildStudentDetails(
-          database,
-          student
-        ),
-
-      openings:
-        getOpeningStats(
-          database,
-          studentId
-        )
-    };
-  }
-
-
-  /* =======================================================
-     API GOOGLE APPS SCRIPT
-     ======================================================= */
+  // =====================================================
+  // APPEL APPS SCRIPT
+  // =====================================================
 
   async function remoteRequest(
     action,
     payload = {},
     method = "GET"
   ) {
-    const baseUrl =
-      String(
-        config.apiBaseUrl || ""
-      ).trim();
-
-    if (!baseUrl) {
+    if (!config.apiBaseUrl) {
       throw new Error(
-        "L'URL Google Apps Script n'est pas configurée."
+        "URL Apps Script non configurée."
       );
     }
 
+    const params = new URLSearchParams();
+
+    params.set("action", action);
+
+    Object.entries(payload).forEach(
+      ([key, value]) => {
+        if (
+          value !== undefined &&
+          value !== null
+        ) {
+          params.set(key, String(value));
+        }
+      }
+    );
+
     let response;
 
-    if (method === "GET") {
-      const url =
-        new URL(baseUrl);
-
-      url.searchParams.set(
-        "action",
-        action
-      );
-
-      Object.entries(payload).forEach(
-        ([key, value]) => {
-          if (
-            value !== undefined &&
-            value !== null
-          ) {
-            url.searchParams.set(
-              key,
-              String(value)
-            );
-          }
-        }
-      );
-
+    if (method === "POST") {
       response = await fetch(
-        url.toString(),
-        {
-          method: "GET",
-          cache: "no-store"
-        }
-      );
-
-    } else {
-      /*
-       * Form URL encoded plutôt que JSON.
-       *
-       * Ça facilitera la communication avec
-       * Google Apps Script depuis GitHub Pages.
-       */
-
-      const body =
-        new URLSearchParams();
-
-      body.set(
-        "action",
-        action
-      );
-
-      Object.entries(payload).forEach(
-        ([key, value]) => {
-          if (
-            value !== undefined &&
-            value !== null
-          ) {
-            body.set(
-              key,
-              typeof value === "object"
-                ? JSON.stringify(value)
-                : String(value)
-            );
-          }
-        }
-      );
-
-      response = await fetch(
-        baseUrl,
+        config.apiBaseUrl,
         {
           method: "POST",
-          body,
-          cache: "no-store"
+          body: params
+        }
+      );
+    } else {
+      response = await fetch(
+        config.apiBaseUrl +
+        "?" +
+        params.toString(),
+        {
+          method: "GET"
         }
       );
     }
 
     if (!response.ok) {
       throw new Error(
-        "Erreur de communication avec le serveur."
+        "Erreur réseau : " +
+        response.status
       );
     }
 
-    const result =
-      await response.json();
+    const result = await response.json();
 
-    if (
-      !result ||
-      result.ok !== true
-    ) {
+    if (!result.ok) {
       throw new Error(
-        result?.error ||
-        "Une erreur inconnue est survenue."
+        result.error ||
+        "Erreur serveur."
       );
     }
 
@@ -1165,276 +207,1286 @@ window.FC_API = (() => {
   }
 
 
-  /* =======================================================
-     API PUBLIQUE
+  // =====================================================
+  // CONFIG PUBLIQUE
+  // =====================================================
 
-     Tout le reste du site utilisera uniquement
-     ces fonctions.
-     ======================================================= */
-
-  async function searchStudents(query) {
-    if (config.useMockData) {
-      return mockSearchStudents(query);
+  async function refreshConfig() {
+    if (inflight.config) {
+      return inflight.config;
     }
 
-    return remoteRequest(
-      "searchStudents",
-      { query }
-    );
+    inflight.config =
+      remoteRequest(
+        "getPublicConfig"
+      )
+        .then(data => {
+          publicCache.config = data;
+          publicCache.configAt = now();
+
+          savePublicCache();
+
+          return data;
+        })
+        .finally(() => {
+          inflight.config = null;
+        });
+
+    return inflight.config;
   }
-
-
-  async function getStudents() {
-    if (config.useMockData) {
-      return mockGetStudents();
-    }
-
-    return remoteRequest(
-      "getStudents"
-    );
-  }
-
-
-  async function getStudent(studentId) {
-    if (config.useMockData) {
-      return mockGetStudent(
-        studentId
-      );
-    }
-
-    return remoteRequest(
-      "getStudent",
-      { studentId }
-    );
-  }
-
 
   async function getPublicConfig() {
-    if (config.useMockData) {
-      return mockGetPublicConfig();
-    }
+    if (publicCache.config) {
+      if (
+        now() -
+        publicCache.configAt >
+        REFRESH_DELAY
+      ) {
+        refreshConfig()
+          .catch(syncError);
+      }
 
-    return remoteRequest(
-      "getPublicConfig"
-    );
-  }
-
-
-  async function teacherLogin(password) {
-    if (config.useMockData) {
-      return mockTeacherLogin(
-        password
+      return clone(
+        publicCache.config
       );
     }
 
-    return remoteRequest(
-      "teacherLogin",
-      { password },
-      "POST"
+    return clone(
+      await refreshConfig()
     );
   }
 
 
-  async function getTeacherDashboard(token) {
-    if (config.useMockData) {
-      return mockGetTeacherDashboard(
+  // =====================================================
+  // ÉLÈVES
+  // =====================================================
+
+  async function refreshStudents() {
+    if (inflight.students) {
+      return inflight.students;
+    }
+
+    inflight.students =
+      remoteRequest("getStudents")
+        .then(students => {
+          publicCache.students =
+            students || [];
+
+          publicCache.studentsAt =
+            now();
+
+          savePublicCache();
+
+          // Préchargement des collections
+          // en arrière-plan.
+          prefetchProfiles(
+            publicCache.students
+          );
+
+          return students;
+        })
+        .finally(() => {
+          inflight.students = null;
+        });
+
+    return inflight.students;
+  }
+
+  async function getStudents() {
+    if (publicCache.students) {
+      if (
+        now() -
+        publicCache.studentsAt >
+        REFRESH_DELAY
+      ) {
+        refreshStudents()
+          .catch(syncError);
+      }
+
+      prefetchProfiles(
+        publicCache.students
+      );
+
+      return clone(
+        publicCache.students
+      );
+    }
+
+    const students =
+      await refreshStudents();
+
+    return clone(students);
+  }
+
+
+  // =====================================================
+  // RECHERCHE
+  // =====================================================
+
+  async function searchStudents(query) {
+    const q = normalize(query);
+
+    if (
+      q.length <
+      (config.minimumSearchLength || 2)
+    ) {
+      return [];
+    }
+
+    // 1. Recherche instantanée
+    // dans les noms publics déjà chargés.
+    if (publicCache.students) {
+      const localResults =
+        publicCache.students.filter(
+          student =>
+            normalize(
+              student.name
+            ).includes(q)
+        );
+
+      if (localResults.length) {
+        // Le serveur confirme en arrière-plan,
+        // sans bloquer l'utilisateur.
+        refreshSearch(
+          query,
+          q
+        ).catch(syncError);
+
+        return clone(localResults);
+      }
+    }
+
+    // 2. Recherche déjà faite auparavant.
+    if (
+      publicCache.searches &&
+      publicCache.searches[q]
+    ) {
+      const cached =
+        publicCache.searches[q];
+
+      refreshSearch(
+        query,
+        q
+      ).catch(syncError);
+
+      return clone(
+        cached.data || []
+      );
+    }
+
+    // 3. Seulement si on n'a vraiment
+    // rien localement, on attend Google.
+    return clone(
+      await refreshSearch(
+        query,
+        q
+      )
+    );
+  }
+
+  async function refreshSearch(
+    query,
+    normalizedQuery
+  ) {
+    if (
+      inflight.searches[
+        normalizedQuery
+      ]
+    ) {
+      return inflight.searches[
+        normalizedQuery
+      ];
+    }
+
+    inflight.searches[
+      normalizedQuery
+    ] =
+      remoteRequest(
+        "searchStudents",
+        {
+          query: query
+        }
+      )
+        .then(results => {
+          if (!publicCache.searches) {
+            publicCache.searches = {};
+          }
+
+          publicCache.searches[
+            normalizedQuery
+          ] = {
+            data: results || [],
+            at: now()
+          };
+
+          savePublicCache();
+
+          return results || [];
+        })
+        .finally(() => {
+          delete inflight.searches[
+            normalizedQuery
+          ];
+        });
+
+    return inflight.searches[
+      normalizedQuery
+    ];
+  }
+
+
+  // =====================================================
+  // PROFILS / COLLECTIONS
+  // =====================================================
+
+  async function refreshProfile(
+    studentId
+  ) {
+    if (
+      inflight.profiles[
+        studentId
+      ]
+    ) {
+      return inflight.profiles[
+        studentId
+      ];
+    }
+
+    inflight.profiles[
+      studentId
+    ] =
+      remoteRequest(
+        "getStudent",
+        {
+          studentId: studentId
+        }
+      )
+        .then(profile => {
+          if (!publicCache.profiles) {
+            publicCache.profiles = {};
+          }
+
+          publicCache.profiles[
+            studentId
+          ] = {
+            data: profile,
+            at: now()
+          };
+
+          savePublicCache();
+
+          return profile;
+        })
+        .finally(() => {
+          delete inflight.profiles[
+            studentId
+          ];
+        });
+
+    return inflight.profiles[
+      studentId
+    ];
+  }
+
+  async function getStudent(
+    studentId
+  ) {
+    const cached =
+      publicCache.profiles &&
+      publicCache.profiles[
+        studentId
+      ];
+
+    if (cached && cached.data) {
+      if (
+        now() -
+        cached.at >
+        PROFILE_REFRESH_DELAY
+      ) {
+        refreshProfile(
+          studentId
+        ).catch(syncError);
+      }
+
+      return clone(
+        cached.data
+      );
+    }
+
+    return clone(
+      await refreshProfile(
+        studentId
+      )
+    );
+  }
+
+
+  // =====================================================
+  // PRÉCHARGEMENT DES PROFILS
+  // =====================================================
+
+  async function prefetchProfiles(
+    students
+  ) {
+    if (!Array.isArray(students)) {
+      return;
+    }
+
+    const missing =
+      students.filter(student => {
+        const cached =
+          publicCache.profiles &&
+          publicCache.profiles[
+            student.id
+          ];
+
+        if (!cached) {
+          return true;
+        }
+
+        return (
+          now() -
+          cached.at >
+          PROFILE_REFRESH_DELAY
+        );
+      });
+
+    // On évite de lancer 25 requêtes
+    // exactement en même temps.
+    const concurrency = 4;
+    let cursor = 0;
+
+    async function worker() {
+      while (
+        cursor <
+        missing.length
+      ) {
+        const student =
+          missing[cursor++];
+
+        try {
+          await refreshProfile(
+            student.id
+          );
+        } catch (error) {
+          console.warn(
+            "Préchargement impossible pour",
+            student.id
+          );
+        }
+      }
+    }
+
+    const workers = [];
+
+    for (
+      let i = 0;
+      i < Math.min(
+        concurrency,
+        missing.length
+      );
+      i++
+    ) {
+      workers.push(worker());
+    }
+
+    Promise.all(workers)
+      .catch(() => {});
+  }
+
+
+  // =====================================================
+  // LOGIN PROF
+  // =====================================================
+
+  async function teacherLogin(
+    password
+  ) {
+    const result =
+      await remoteRequest(
+        "teacherLogin",
+        {
+          password: password
+        },
+        "POST"
+      );
+
+    teacherCache = {
+      token: result.token,
+      dashboard: null,
+      dashboardAt: 0
+    };
+
+    saveTeacherCache();
+
+    return result;
+  }
+
+
+  // =====================================================
+  // DASHBOARD PROF
+  // =====================================================
+
+  async function refreshDashboard(
+    token
+  ) {
+    if (inflight.dashboard) {
+      return inflight.dashboard;
+    }
+
+    inflight.dashboard =
+      remoteRequest(
+        "getTeacherDashboard",
+        {
+          token: token
+        }
+      )
+        .then(data => {
+          teacherCache.token =
+            token;
+
+          teacherCache.dashboard =
+            data;
+
+          teacherCache.dashboardAt =
+            now();
+
+          saveTeacherCache();
+
+          // Met également à jour
+          // les infos publiques.
+          if (
+            data &&
+            Array.isArray(
+              data.students
+            )
+          ) {
+            publicCache.students =
+              data.students
+                .filter(
+                  student =>
+                    student.active
+                )
+                .map(student => ({
+                  id: student.id,
+                  name:
+                    student.publicName ||
+                    student.name,
+                  merits:
+                    student.merits,
+                  active:
+                    student.active,
+                  openings:
+                    student.openings
+                }));
+
+            publicCache.studentsAt =
+              now();
+
+            savePublicCache();
+          }
+
+          return data;
+        })
+        .finally(() => {
+          inflight.dashboard = null;
+        });
+
+    return inflight.dashboard;
+  }
+
+  async function getTeacherDashboard(
+    token
+  ) {
+    if (
+      teacherCache.token ===
+        token &&
+      teacherCache.dashboard
+    ) {
+      if (
+        now() -
+        teacherCache.dashboardAt >
+        REFRESH_DELAY
+      ) {
+        refreshDashboard(
+          token
+        ).catch(syncError);
+      }
+
+      return clone(
+        teacherCache.dashboard
+      );
+    }
+
+    return clone(
+      await refreshDashboard(
         token
-      );
-    }
-
-    return remoteRequest(
-      "getTeacherDashboard",
-      { token }
+      )
     );
   }
 
+
+  // =====================================================
+  // MÉRITES - OPTIMISTIC UI
+  // =====================================================
 
   async function updateStudentMerits(
     token,
     studentId,
     merits
   ) {
-    if (config.useMockData) {
-      return mockUpdateStudentMerits(
-        token,
-        studentId,
-        merits
+    const value =
+      Math.max(
+        0,
+        Math.floor(
+          Number(merits) || 0
+        )
       );
+
+    let previousValue = null;
+
+    // Mise à jour immédiate
+    // du dashboard local.
+    if (
+      teacherCache.dashboard &&
+      Array.isArray(
+        teacherCache.dashboard.students
+      )
+    ) {
+      const student =
+        teacherCache.dashboard.students.find(
+          s =>
+            String(s.id) ===
+            String(studentId)
+        );
+
+      if (student) {
+        previousValue =
+          student.merits;
+
+        student.merits =
+          value;
+
+        const threshold =
+          Number(
+            teacherCache.dashboard
+              .config
+              ?.meritsPerOpening
+          ) || 10;
+
+        const completed =
+          Number(
+            student.openingsCompleted
+          ) || 0;
+
+        const earned =
+          Math.floor(
+            value / threshold
+          );
+
+        student.openings = {
+          earned: earned,
+          completed: completed,
+          available:
+            Math.max(
+              0,
+              earned -
+              completed
+            ),
+          threshold:
+            threshold
+        };
+
+        teacherCache.dashboardAt =
+          now();
+
+        saveTeacherCache();
+      }
     }
 
-    return remoteRequest(
+    // Mise à jour cache public.
+    updateCachedPublicStudent(
+      studentId,
+      {
+        merits: value
+      }
+    );
+
+    // Le frontend reçoit la réponse
+    // immédiatement.
+    const immediate = {
+      studentId:
+        studentId,
+      merits:
+        value
+    };
+
+    // Sauvegarde Google derrière.
+    remoteRequest(
       "updateStudentMerits",
       {
-        token,
-        studentId,
-        merits
+        token: token,
+        studentId: studentId,
+        merits: value
       },
       "POST"
-    );
+    )
+      .then(() => {
+        refreshDashboard(
+          token
+        ).catch(() => {});
+      })
+      .catch(error => {
+        // Rollback si Google échoue.
+        if (
+          previousValue !== null
+        ) {
+          updateStudentMeritsLocalOnly(
+            studentId,
+            previousValue
+          );
+        }
+
+        syncError(error);
+
+        setTimeout(() => {
+          alert(
+            "La modification n'a pas pu être sauvegardée dans Google Sheets."
+          );
+        }, 0);
+      });
+
+    return immediate;
   }
 
-
-  async function updateMeritsPerOpening(
-    token,
-    value
-  ) {
-    if (config.useMockData) {
-      return mockUpdateMeritsPerOpening(
-        token,
-        value
-      );
-    }
-
-    return remoteRequest(
-      "updateMeritsPerOpening",
-      {
-        token,
-        value
-      },
-      "POST"
-    );
-  }
-
-
-  async function createStudent(
-    token,
-    name
-  ) {
-    if (config.useMockData) {
-      return mockCreateStudent(
-        token,
-        name
-      );
-    }
-
-    return remoteRequest(
-      "createStudent",
-      {
-        token,
-        name
-      },
-      "POST"
-    );
-  }
-
-
-  async function archiveStudent(
-    token,
-    studentId
-  ) {
-    if (config.useMockData) {
-      return mockArchiveStudent(
-        token,
-        studentId
-      );
-    }
-
-    return remoteRequest(
-      "archiveStudent",
-      {
-        token,
-        studentId
-      },
-      "POST"
-    );
-  }
-
-
-  async function getOpeningContext(
-    token,
+  function updateStudentMeritsLocalOnly(
     studentId,
-    packType =
-      config.defaultPackType
+    merits
   ) {
-    if (config.useMockData) {
-      return mockGetOpeningContext(
-        token,
-        studentId,
-        packType
-      );
+    if (
+      teacherCache.dashboard &&
+      Array.isArray(
+        teacherCache.dashboard.students
+      )
+    ) {
+      const student =
+        teacherCache.dashboard.students.find(
+          s =>
+            String(s.id) ===
+            String(studentId)
+        );
+
+      if (student) {
+        student.merits =
+          merits;
+
+        saveTeacherCache();
+      }
     }
 
-    return remoteRequest(
-      "getOpeningContext",
+    updateCachedPublicStudent(
+      studentId,
       {
-        token,
-        studentId,
-        packType
+        merits: merits
       }
     );
   }
 
 
-  async function performOpening(
+  // =====================================================
+  // SEUIL MÉRITES - OPTIMISTIC UI
+  // =====================================================
+
+  async function updateMeritsPerOpening(
+    token,
+    value
+  ) {
+    const threshold =
+      Math.max(
+        1,
+        Math.floor(
+          Number(value) || 10
+        )
+      );
+
+    if (
+      teacherCache.dashboard
+    ) {
+      if (
+        !teacherCache.dashboard.config
+      ) {
+        teacherCache.dashboard.config =
+          {};
+      }
+
+      teacherCache.dashboard
+        .config
+        .meritsPerOpening =
+        threshold;
+
+      recalculateDashboardOpenings(
+        threshold
+      );
+
+      saveTeacherCache();
+    }
+
+    if (publicCache.config) {
+      publicCache.config
+        .meritsPerOpening =
+        threshold;
+
+      publicCache.configAt =
+        now();
+
+      savePublicCache();
+    }
+
+    const immediate = {
+      meritsPerOpening:
+        threshold
+    };
+
+    remoteRequest(
+      "updateMeritsPerOpening",
+      {
+        token: token,
+        value: threshold
+      },
+      "POST"
+    )
+      .then(() => {
+        refreshDashboard(
+          token
+        ).catch(() => {});
+
+        refreshConfig()
+          .catch(() => {});
+      })
+      .catch(error => {
+        syncError(error);
+
+        setTimeout(() => {
+          alert(
+            "Le nouveau seuil n'a pas pu être sauvegardé."
+          );
+        }, 0);
+      });
+
+    return immediate;
+  }
+
+  function recalculateDashboardOpenings(
+    threshold
+  ) {
+    if (
+      !teacherCache.dashboard ||
+      !Array.isArray(
+        teacherCache.dashboard.students
+      )
+    ) {
+      return;
+    }
+
+    teacherCache.dashboard.students
+      .forEach(student => {
+        const merits =
+          Number(
+            student.merits
+          ) || 0;
+
+        const completed =
+          Number(
+            student.openingsCompleted
+          ) || 0;
+
+        const earned =
+          Math.floor(
+            merits /
+            threshold
+          );
+
+        student.openings = {
+          earned: earned,
+          completed: completed,
+          available:
+            Math.max(
+              0,
+              earned -
+              completed
+            ),
+          threshold:
+            threshold
+        };
+      });
+  }
+
+
+  // =====================================================
+  // AJOUT ÉLÈVE
+  // =====================================================
+
+  async function createStudent(
+    token,
+    name,
+    publicName = ""
+  ) {
+    // Action rare :
+    // on attend le serveur pour recevoir
+    // le vrai ID E00X.
+    const result =
+      await remoteRequest(
+        "createStudent",
+        {
+          token: token,
+          name: name,
+          publicName:
+            publicName
+        },
+        "POST"
+      );
+
+    await refreshDashboard(
+      token
+    );
+
+    refreshStudents()
+      .catch(syncError);
+
+    return result;
+  }
+
+
+  // =====================================================
+  // ARCHIVER ÉLÈVE
+  // =====================================================
+
+  async function archiveStudent(
+    token,
+    studentId
+  ) {
+    // Disparition immédiate du dashboard.
+    if (
+      teacherCache.dashboard &&
+      Array.isArray(
+        teacherCache.dashboard.students
+      )
+    ) {
+      const student =
+        teacherCache.dashboard.students.find(
+          s =>
+            String(s.id) ===
+            String(studentId)
+        );
+
+      if (student) {
+        student.active =
+          false;
+      }
+
+      saveTeacherCache();
+    }
+
+    if (
+      Array.isArray(
+        publicCache.students
+      )
+    ) {
+      publicCache.students =
+        publicCache.students.filter(
+          student =>
+            String(student.id) !==
+            String(studentId)
+        );
+
+      savePublicCache();
+    }
+
+    const result = {
+      studentId:
+        studentId,
+      active:
+        false
+    };
+
+    remoteRequest(
+      "archiveStudent",
+      {
+        token: token,
+        studentId: studentId
+      },
+      "POST"
+    )
+      .then(() => {
+        refreshDashboard(
+          token
+        ).catch(() => {});
+      })
+      .catch(error => {
+        syncError(error);
+
+        setTimeout(() => {
+          alert(
+            "L'élève n'a pas pu être archivé dans Google Sheets."
+          );
+        }, 0);
+      });
+
+    return result;
+  }
+
+
+  // =====================================================
+  // CONTEXTE OPENING
+  // =====================================================
+
+  async function getOpeningContext(
     token,
     studentId,
-    packType =
-      config.defaultPackType
+    packType = "standard"
   ) {
-    if (config.useMockData) {
-      return mockPerformOpening(
-        token,
-        studentId,
-        packType
-      );
+    // Si le dashboard est déjà chargé,
+    // aucune attente Google.
+    if (
+      teacherCache.token ===
+        token &&
+      teacherCache.dashboard &&
+      Array.isArray(
+        teacherCache.dashboard.students
+      )
+    ) {
+      const student =
+        teacherCache.dashboard.students.find(
+          s =>
+            String(s.id) ===
+            String(studentId)
+        );
+
+      if (student) {
+        const stats =
+          student.openings || {
+            earned: 0,
+            completed: 0,
+            available: 0,
+            threshold: 10
+          };
+
+        return {
+          student: {
+            id:
+              student.id,
+
+            name:
+              student.publicName ||
+              student.name,
+
+            merits:
+              student.merits,
+
+            openings:
+              stats
+          },
+
+          openings:
+            stats,
+
+          stats:
+            stats,
+
+          packType:
+            packType,
+
+          availablePlayers:
+            teacherCache.dashboard
+              .players
+              ?.available ?? 0
+        };
+      }
     }
 
     return remoteRequest(
-      "performOpening",
+      "getOpeningContext",
       {
-        token,
-        studentId,
-        packType
-      },
-      "POST"
+        token: token,
+        studentId:
+          studentId,
+        packType:
+          packType
+      }
     );
   }
 
 
-  /* =======================================================
-     OUTILS DÉVELOPPEMENT
-     ======================================================= */
+  // =====================================================
+  // OPENING
+  // =====================================================
 
-  async function resetDemo() {
-    if (!config.useMockData) {
-      throw new Error(
-        "resetDemo est disponible uniquement en mode démonstration."
+  async function performOpening(
+    token,
+    studentId,
+    packType = "standard"
+  ) {
+    // Ici on DOIT attendre le serveur.
+    // C'est ce qui garantit qu'un même
+    // joueur ne peut jamais être donné
+    // à deux élèves.
+    const result =
+      await remoteRequest(
+        "performOpening",
+        {
+          token: token,
+          studentId:
+            studentId,
+          packType:
+            packType
+        },
+        "POST"
       );
+
+    // Mise à jour immédiate du cache prof.
+    if (
+      teacherCache.dashboard &&
+      Array.isArray(
+        teacherCache.dashboard.students
+      )
+    ) {
+      const student =
+        teacherCache.dashboard.students.find(
+          s =>
+            String(s.id) ===
+            String(studentId)
+        );
+
+      if (student) {
+        if (result.student) {
+          student.merits =
+            result.student.merits;
+        }
+
+        if (result.openings) {
+          student.openings =
+            result.openings;
+
+          student.openingsCompleted =
+            result.openings.completed;
+        }
+      }
+
+      if (
+        teacherCache.dashboard.players
+      ) {
+        teacherCache.dashboard
+          .players
+          .owned =
+          (
+            teacherCache.dashboard
+              .players
+              .owned || 0
+          ) + 1;
+
+        teacherCache.dashboard
+          .players
+          .available =
+          Math.max(
+            0,
+            (
+              teacherCache.dashboard
+                .players
+                .available || 0
+            ) - 1
+          );
+      }
+
+      saveTeacherCache();
     }
 
-    return resetMockDatabase();
+    // Mise à jour collection locale.
+    const cached =
+      publicCache.profiles &&
+      publicCache.profiles[
+        studentId
+      ];
+
+    if (
+      cached &&
+      cached.data
+    ) {
+      if (
+        !Array.isArray(
+          cached.data.collection
+        )
+      ) {
+        cached.data.collection =
+          [];
+      }
+
+      if (result.player) {
+        cached.data.collection.push(
+          result.player
+        );
+
+        cached.data.collection.sort(
+          (a, b) =>
+            b.rating - a.rating
+        );
+      }
+
+      if (result.student) {
+        cached.data.student =
+          result.student;
+      }
+
+      if (result.openings) {
+        cached.data.openings =
+          result.openings;
+      }
+
+      cached.at =
+        now();
+
+      savePublicCache();
+    }
+
+    updateCachedPublicStudent(
+      studentId,
+      result.student || {}
+    );
+
+    return result;
   }
 
 
-  /* =======================================================
-     EXPORT
-     ======================================================= */
+  // =====================================================
+  // CACHE ÉLÈVE PUBLIC
+  // =====================================================
 
-  return {
+  function updateCachedPublicStudent(
+    studentId,
+    changes
+  ) {
+    if (
+      Array.isArray(
+        publicCache.students
+      )
+    ) {
+      const student =
+        publicCache.students.find(
+          s =>
+            String(s.id) ===
+            String(studentId)
+        );
+
+      if (student) {
+        Object.assign(
+          student,
+          changes
+        );
+      }
+    }
+
+    const profile =
+      publicCache.profiles &&
+      publicCache.profiles[
+        studentId
+      ];
+
+    if (
+      profile &&
+      profile.data &&
+      profile.data.student
+    ) {
+      Object.assign(
+        profile.data.student,
+        changes
+      );
+
+      profile.at =
+        now();
+    }
+
+    savePublicCache();
+  }
+
+
+  // =====================================================
+  // RESET / OUTILS
+  // =====================================================
+
+  function clearCache() {
+    publicCache = {
+      students: null,
+      studentsAt: 0,
+
+      config: null,
+      configAt: 0,
+
+      profiles: {},
+      searches: {}
+    };
+
+    teacherCache = {
+      token: null,
+      dashboard: null,
+      dashboardAt: 0
+    };
+
+    localStorage.removeItem(
+      PUBLIC_CACHE_KEY
+    );
+
+    sessionStorage.removeItem(
+      TEACHER_CACHE_KEY
+    );
+  }
+
+  async function resetDemo() {
+    clearCache();
+    return true;
+  }
+
+
+  // =====================================================
+  // API PUBLIQUE JS
+  // =====================================================
+
+  window.FC_API = {
     searchStudents,
-
     getStudents,
-
     getStudent,
-
     getPublicConfig,
 
     teacherLogin,
-
     getTeacherDashboard,
 
     updateStudentMerits,
-
     updateMeritsPerOpening,
 
     createStudent,
-
     archiveStudent,
 
     getOpeningContext,
-
     performOpening,
 
-    resetDemo
+    resetDemo,
+    clearCache
   };
+
+
+  // =====================================================
+  // PRÉCHAUFFAGE AUTOMATIQUE
+  // =====================================================
+
+  if (
+    !config.useMockData &&
+    config.apiBaseUrl
+  ) {
+    setTimeout(() => {
+      getPublicConfig()
+        .catch(() => {});
+
+      getStudents()
+        .catch(() => {});
+    }, 0);
+  }
+
 })();
