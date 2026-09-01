@@ -1,21 +1,20 @@
 /* =========================================================
    BEL AIR FC — OPENING.CSS
+   Version penalty
 
-   OPENING :
    PACK
-   → PENALTY 2,5 s
+   → ballon lâché sur le point
+   → panenka
    → BARRE
-   → REBOND LIGNE
+   → rebond sur la LIGNE
    → BUT
    → FEUX D'ARTIFICE
-   → NATIONALITÉ + CLUB
-   → NOTE + POSTE
-   → CARTE FINALE
+   → indices
    ========================================================= */
 
 
 /* =========================================================
-   PAGE
+   GLOBAL
    ========================================================= */
 
 html,
@@ -25,60 +24,46 @@ body {
 
 body.opening-page {
   margin: 0;
-
   min-height: 100vh;
-
   overflow-x: hidden;
 
-  color: #ffffff;
+  color: #fff;
 
   background:
-    radial-gradient(
-      circle at 50% 15%,
-      #174f7f 0%,
-      #092137 32%,
-      #04101d 62%,
-      #010509 100%
-    );
+    radial-gradient(circle at 50% 15%, #174b76 0%, #071b2d 42%, #02070d 100%);
 }
 
 
 /* =========================================================
-   FLASH GLOBAL
+   FLASH
    ========================================================= */
 
 .opening-flash {
   position: fixed;
   inset: 0;
-
   z-index: 9999;
 
   pointer-events: none;
 
   opacity: 0;
-
-  background: #ffffff;
+  background: #fff;
 }
 
 .opening-flash.is-active {
-  animation:
-    openingFlash
-    0.42s
-    ease-out;
+  animation: openingFlash 0.42s ease-out;
 }
 
 @keyframes openingFlash {
-
   0% {
     opacity: 0;
   }
 
   12% {
-    opacity: 0.96;
+    opacity: 0.95;
   }
 
   35% {
-    opacity: 0.4;
+    opacity: 0.35;
   }
 
   100% {
@@ -88,13 +73,12 @@ body.opening-page {
 
 
 /* =========================================================
-   FOND GÉNÉRAL
+   FOND GLOBAL
    ========================================================= */
 
 .opening-background {
   position: fixed;
   inset: 0;
-
   z-index: 0;
 
   overflow: hidden;
@@ -105,22 +89,21 @@ body.opening-page {
 .opening-bg-glow {
   position: absolute;
 
-  width: 1100px;
-  height: 1100px;
+  width: 1000px;
+  height: 1000px;
 
   left: 50%;
   top: 35%;
 
-  transform:
-    translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 
   border-radius: 50%;
 
   background:
     radial-gradient(
       circle,
-      rgba(59, 172, 255, 0.18),
-      rgba(39, 113, 180, 0.07) 38%,
+      rgba(67, 170, 255, 0.18),
+      rgba(30, 94, 148, 0.06) 42%,
       transparent 70%
     );
 
@@ -131,76 +114,41 @@ body.opening-page {
   position: absolute;
   inset: 0;
 
-  opacity: 0.1;
+  opacity: 0.08;
 
   background-image:
-    linear-gradient(
-      rgba(255,255,255,0.05) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255,255,255,0.05) 1px,
-      transparent 1px
-    );
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
 
-  background-size:
-    85px 85px;
-
-  transform:
-    perspective(700px)
-    rotateX(62deg)
-    scale(1.45);
-
-  transform-origin:
-    center bottom;
+  background-size: 85px 85px;
 }
 
 .opening-bg-particles {
   position: absolute;
   inset: -15%;
 
-  opacity: 0.6;
+  opacity: 0.4;
 
   background:
-    radial-gradient(
-      circle at 20% 20%,
-      rgba(255,255,255,0.65) 0 1px,
-      transparent 2px
-    ),
-    radial-gradient(
-      circle at 75% 35%,
-      rgba(255,255,255,0.45) 0 1px,
-      transparent 2px
-    ),
-    radial-gradient(
-      circle at 45% 80%,
-      rgba(255,255,255,0.35) 0 1px,
-      transparent 2px
-    );
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.7) 0 1px, transparent 2px),
+    radial-gradient(circle at 75% 35%, rgba(255,255,255,0.4) 0 1px, transparent 2px),
+    radial-gradient(circle at 45% 80%, rgba(255,255,255,0.35) 0 1px, transparent 2px);
 
   background-size:
     150px 150px,
     210px 210px,
     260px 260px;
 
-  animation:
-    openingBackgroundMove
-    18s
-    linear
-    infinite;
+  animation: globalParticles 18s linear infinite;
 }
 
-@keyframes openingBackgroundMove {
-
+@keyframes globalParticles {
   from {
-    transform:
-      translateY(0);
+    transform: translateY(0);
   }
 
   to {
-    transform:
-      translateY(-150px);
+    transform: translateY(-150px);
   }
 }
 
@@ -211,46 +159,32 @@ body.opening-page {
 
 .opening-header {
   position: relative;
-
   z-index: 30;
 
   min-height: 70px;
 
   display: grid;
-
-  grid-template-columns:
-    1fr
-    auto
-    1fr;
-
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
 
-  padding:
-    10px
-    22px;
+  padding: 10px 22px;
 
-  background:
-    rgba(2, 10, 18, 0.84);
+  background: rgba(2, 10, 18, 0.84);
 
-  backdrop-filter:
-    blur(16px);
+  backdrop-filter: blur(16px);
 
-  border-bottom:
-    1px solid
-    rgba(255,255,255,0.07);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 
 .opening-brand {
   justify-self: start;
 
   display: flex;
-
   align-items: center;
 
   gap: 10px;
 
-  color: #ffffff;
-
+  color: #fff;
   text-decoration: none;
 }
 
@@ -259,34 +193,24 @@ body.opening-page {
   height: 40px;
 
   display: grid;
-
   place-items: center;
 
   border-radius: 12px;
 
   font-size: 13px;
-
   font-weight: 1000;
-
   letter-spacing: 1px;
 
   background:
-    linear-gradient(
-      135deg,
-      #38cf7b,
-      #1688df
-    );
+    linear-gradient(135deg, #38cf7b, #1688df);
 
   box-shadow:
-    0 0 26px
-    rgba(40, 160, 230, 0.22);
+    0 0 26px rgba(40,160,230,0.22);
 }
 
 .opening-brand-text {
   font-size: 14px;
-
   font-weight: 900;
-
   letter-spacing: 1.3px;
 }
 
@@ -298,9 +222,7 @@ body.opening-page {
   display: block;
 
   font-size: 9px;
-
   font-weight: 900;
-
   letter-spacing: 2.4px;
 
   opacity: 0.42;
@@ -312,7 +234,6 @@ body.opening-page {
   margin-top: 2px;
 
   font-size: 17px;
-
   font-weight: 900;
 }
 
@@ -323,21 +244,16 @@ body.opening-page {
   height: 40px;
 
   display: grid;
-
   place-items: center;
 
   border-radius: 50%;
 
-  color: #ffffff;
-
+  color: #fff;
   text-decoration: none;
 
-  background:
-    rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.06);
 
-  border:
-    1px solid
-    rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.09);
 
   transition:
     transform 0.15s ease,
@@ -345,11 +261,9 @@ body.opening-page {
 }
 
 .opening-close:hover {
-  transform:
-    scale(1.07);
+  transform: scale(1.07);
 
-  background:
-    rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.12);
 }
 
 
@@ -359,27 +273,19 @@ body.opening-page {
 
 .opening-main {
   position: relative;
-
   z-index: 10;
 
-  min-height:
-    calc(100vh - 70px);
+  min-height: calc(100vh - 70px);
 
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
-  padding:
-    26px
-    18px
-    44px;
+  padding: 26px 18px 44px;
 }
 
 .opening-state {
   width: 100%;
-
   max-width: 1100px;
 }
 
@@ -399,41 +305,24 @@ body.opening-page {
 .opening-loader-ball {
   font-size: 54px;
 
-  animation:
-    openingLoaderBall
-    0.85s
-    ease-in-out
-    infinite;
+  animation: loadingBall 0.85s ease-in-out infinite;
 }
 
-@keyframes openingLoaderBall {
-
+@keyframes loadingBall {
   0%,
   100% {
-    transform:
-      translateY(0)
-      rotate(0);
+    transform: translateY(0) rotate(0);
   }
 
   50% {
-    transform:
-      translateY(-13px)
-      rotate(25deg);
+    transform: translateY(-13px) rotate(25deg);
   }
 }
 
 .opening-loading h1 {
-  margin:
-    17px
-    0
-    6px;
+  margin: 17px 0 6px;
 
-  font-size:
-    clamp(
-      28px,
-      5vw,
-      42px
-    );
+  font-size: clamp(28px, 5vw, 42px);
 }
 
 .opening-loading p {
@@ -457,12 +346,9 @@ body.opening-page {
   width: 64px;
   height: 64px;
 
-  margin:
-    0 auto
-    18px;
+  margin: 0 auto 18px;
 
   display: grid;
-
   place-items: center;
 
   border-radius: 50%;
@@ -470,64 +356,43 @@ body.opening-page {
   color: #ff8a8a;
 
   font-size: 28px;
-
   font-weight: 1000;
 
-  background:
-    rgba(255, 65, 65, 0.13);
+  background: rgba(255,65,65,0.13);
 
-  border:
-    1px solid
-    rgba(255, 80, 80, 0.3);
+  border: 1px solid rgba(255,80,80,0.3);
 }
 
 .opening-error h1 {
-  font-size:
-    clamp(
-      26px,
-      5vw,
-      40px
-    );
+  font-size: clamp(26px, 5vw, 40px);
 }
 
 .opening-error-message {
-  margin:
-    12px
-    0
-    24px;
+  margin: 12px 0 24px;
 
-  color:
-    rgba(255,255,255,0.58);
+  color: rgba(255,255,255,0.58);
 }
 
 
 /* =========================================================
-   READY
+   PACK READY
    ========================================================= */
 
 .opening-ready {
   text-align: center;
 
-  animation:
-    openingReadyAppear
-    0.4s
-    ease-out;
+  animation: readyAppear 0.4s ease-out;
 }
 
-@keyframes openingReadyAppear {
-
+@keyframes readyAppear {
   from {
     opacity: 0;
-
-    transform:
-      translateY(15px);
+    transform: translateY(15px);
   }
 
   to {
     opacity: 1;
-
-    transform:
-      translateY(0);
+    transform: translateY(0);
   }
 }
 
@@ -538,41 +403,25 @@ body.opening-page {
 .opening-pack-type {
   display: inline-block;
 
-  padding:
-    6px
-    12px;
+  padding: 6px 12px;
 
   border-radius: 999px;
 
   font-size: 10px;
-
   font-weight: 900;
-
   letter-spacing: 2px;
 
   opacity: 0.65;
 
-  background:
-    rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.05);
 
-  border:
-    1px solid
-    rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .opening-ready h1 {
-  margin:
-    14px
-    0
-    8px;
+  margin: 14px 0 8px;
 
-  font-size:
-    clamp(
-      32px,
-      5vw,
-      54px
-    );
-
+  font-size: clamp(32px, 5vw, 54px);
   line-height: 1;
 }
 
@@ -581,8 +430,7 @@ body.opening-page {
 
   max-width: 600px;
 
-  color:
-    rgba(255,255,255,0.55);
+  color: rgba(255,255,255,0.55);
 }
 
 
@@ -593,15 +441,10 @@ body.opening-page {
 .opening-pack-button {
   position: relative;
 
-  margin:
-    22px
-    auto
-    18px;
+  margin: 22px auto 18px;
 
   display: inline-flex;
-
   flex-direction: column;
-
   align-items: center;
 
   gap: 18px;
@@ -630,73 +473,51 @@ body.opening-page {
   left: 50%;
   top: 45%;
 
-  transform:
-    translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 
   border-radius: 50%;
 
   background:
     radial-gradient(
       circle,
-      rgba(255, 210, 67, 0.3),
-      rgba(255, 174, 0, 0.07) 45%,
+      rgba(255,210,67,0.3),
+      rgba(255,174,0,0.07) 45%,
       transparent 70%
     );
 
-  animation:
-    packGlow
-    2s
-    ease-in-out
-    infinite;
+  animation: packGlow 2s ease-in-out infinite;
 }
 
 @keyframes packGlow {
-
   0%,
   100% {
     opacity: 0.65;
-
-    transform:
-      translate(-50%, -50%)
-      scale(0.93);
+    transform: translate(-50%, -50%) scale(0.93);
   }
 
   50% {
     opacity: 1;
-
-    transform:
-      translate(-50%, -50%)
-      scale(1.07);
+    transform: translate(-50%, -50%) scale(1.07);
   }
 }
 
 .opening-pack {
   position: relative;
 
-  width:
-    clamp(
-      180px,
-      30vw,
-      235px
-    );
+  width: clamp(180px, 30vw, 235px);
 
   aspect-ratio: 0.72;
 
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
-
   justify-content: center;
 
   overflow: hidden;
 
   border-radius: 22px;
 
-  border:
-    2px solid
-    rgba(255,255,255,0.26);
+  border: 2px solid rgba(255,255,255,0.26);
 
   color: #173b72;
 
@@ -710,23 +531,16 @@ body.opening-page {
     );
 
   box-shadow:
-    0 30px 90px
-    rgba(0,0,0,0.65),
-    0 0 60px
-    rgba(255,185,20,0.2);
+    0 30px 90px rgba(0,0,0,0.65),
+    0 0 60px rgba(255,185,20,0.2);
 
-  animation:
-    packFloat
-    2.2s
-    ease-in-out
-    infinite;
+  animation: packFloat 2.2s ease-in-out infinite;
 }
 
 .opening-pack::before {
   content: "";
 
   position: absolute;
-
   inset: -60%;
 
   background:
@@ -737,39 +551,27 @@ body.opening-page {
       transparent 59%
     );
 
-  animation:
-    packShine
-    3s
-    linear
-    infinite;
+  animation: packShine 3s linear infinite;
 }
 
 @keyframes packShine {
-
   from {
-    transform:
-      translateX(-35%);
+    transform: translateX(-35%);
   }
 
   to {
-    transform:
-      translateX(35%);
+    transform: translateX(35%);
   }
 }
 
 @keyframes packFloat {
-
   0%,
   100% {
-    transform:
-      translateY(0)
-      rotate(-1deg);
+    transform: translateY(0) rotate(-1deg);
   }
 
   50% {
-    transform:
-      translateY(-9px)
-      rotate(1deg);
+    transform: translateY(-9px) rotate(1deg);
   }
 }
 
@@ -778,13 +580,10 @@ body.opening-page {
   position: absolute;
 
   font-size: 10px;
-
   font-weight: 1000;
-
   letter-spacing: 2.5px;
 
-  color:
-    rgba(45,29,0,0.65);
+  color: rgba(45,29,0,0.65);
 }
 
 .opening-pack-top {
@@ -796,15 +595,9 @@ body.opening-page {
 }
 
 .opening-pack-logo {
-  font-size:
-    clamp(
-      52px,
-      10vw,
-      76px
-    );
+  font-size: clamp(52px, 10vw, 76px);
 
   font-weight: 1000;
-
   line-height: 1;
 }
 
@@ -818,34 +611,24 @@ body.opening-page {
   margin-top: 6px;
 
   font-size: 17px;
-
   font-weight: 1000;
-
   letter-spacing: 5px;
 }
 
 .opening-pack-click {
   position: relative;
-
   z-index: 2;
 
   font-size: 10px;
-
   font-weight: 1000;
-
   letter-spacing: 2px;
 
   opacity: 0.7;
 
-  animation:
-    packClickPulse
-    1.4s
-    ease-in-out
-    infinite;
+  animation: clickPulse 1.4s ease-in-out infinite;
 }
 
-@keyframes packClickPulse {
-
+@keyframes clickPulse {
   0%,
   100% {
     opacity: 0.45;
@@ -858,43 +641,34 @@ body.opening-page {
 
 
 /* =========================================================
-   STATS READY
+   STATS
    ========================================================= */
 
 .opening-ready-stats {
   max-width: 520px;
 
-  margin:
-    25px auto 0;
+  margin: 25px auto 0;
 
   display: grid;
-
-  grid-template-columns:
-    repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr);
 
   gap: 10px;
 }
 
 .opening-ready-stat {
-  padding:
-    13px
-    16px;
+  padding: 13px 16px;
 
   border-radius: 14px;
 
-  background:
-    rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.05);
 
-  border:
-    1px solid
-    rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 .opening-stat-value {
   display: block;
 
   font-size: 23px;
-
   font-weight: 1000;
 }
 
@@ -910,7 +684,7 @@ body.opening-page {
 
 
 /* =========================================================
-   ZONE OPENING
+   OPENING
    ========================================================= */
 
 .opening-animation {
@@ -921,35 +695,26 @@ body.opening-page {
   position: relative;
 
   width: 100%;
-
-  height:
-    min(
-      76vh,
-      680px
-    );
-
-  min-height: 570px;
+  height: min(78vh, 700px);
+  min-height: 580px;
 
   overflow: hidden;
 
-  border-radius: 26px;
+  border-radius: 28px;
 
-  border:
-    1px solid
-    rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.08);
 
   background:
-    radial-gradient(
-      ellipse at 50% 15%,
-      #245d8c 0%,
-      #0b2c49 30%,
-      #061625 62%,
-      #02070c 100%
+    linear-gradient(
+      to bottom,
+      #123a5d 0%,
+      #08243c 24%,
+      #061727 38%,
+      #03101a 100%
     );
 
   box-shadow:
-    0 35px 110px
-    rgba(0,0,0,0.72);
+    0 35px 110px rgba(0,0,0,0.72);
 }
 
 
@@ -959,96 +724,71 @@ body.opening-page {
 
 .tunnel-light {
   position: absolute;
+  z-index: 4;
 
-  top: -10%;
+  top: -20%;
 
-  width: 190px;
-  height: 120%;
+  width: 220px;
+  height: 90%;
 
-  opacity: 0.3;
+  opacity: 0.18;
 
-  filter: blur(24px);
+  filter: blur(30px);
 
   pointer-events: none;
 }
 
 .tunnel-light-left {
-  left: 6%;
+  left: 3%;
 
-  transform:
-    rotate(-14deg);
+  transform: rotate(-19deg);
 
   background:
     linear-gradient(
-      to right,
-      transparent,
-      rgba(77,176,255,0.82),
+      rgba(255,255,255,0.9),
+      rgba(74,178,255,0.5),
       transparent
     );
 }
 
 .tunnel-light-right {
-  right: 6%;
+  right: 3%;
 
-  transform:
-    rotate(14deg);
+  transform: rotate(19deg);
 
   background:
     linear-gradient(
-      to left,
-      transparent,
-      rgba(77,176,255,0.82),
+      rgba(255,255,255,0.9),
+      rgba(74,178,255,0.5),
       transparent
     );
 }
 
-body.is-opening
-.tunnel-light-left {
-  animation:
-    tunnelLightLeft
-    1.2s
-    ease-in-out
-    infinite
-    alternate;
+body.is-opening .tunnel-light-left {
+  animation: lightLeft 1.1s ease-in-out infinite alternate;
 }
 
-body.is-opening
-.tunnel-light-right {
-  animation:
-    tunnelLightRight
-    1.2s
-    ease-in-out
-    infinite
-    alternate;
+body.is-opening .tunnel-light-right {
+  animation: lightRight 1.1s ease-in-out infinite alternate;
 }
 
-@keyframes tunnelLightLeft {
-
+@keyframes lightLeft {
   from {
-    transform:
-      translateX(-15px)
-      rotate(-14deg);
+    transform: translateX(-15px) rotate(-19deg);
   }
 
   to {
-    transform:
-      translateX(25px)
-      rotate(-6deg);
+    transform: translateX(28px) rotate(-11deg);
   }
 }
 
-@keyframes tunnelLightRight {
-
+@keyframes lightRight {
   from {
-    transform:
-      translateX(15px)
-      rotate(14deg);
+    transform: translateX(15px) rotate(19deg);
   }
 
   to {
-    transform:
-      translateX(-25px)
-      rotate(6deg);
+    transform: translateX(-28px) rotate(11deg);
   }
 }
 
@@ -1064,9 +804,7 @@ body.is-opening
   z-index: 10;
 
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
   padding: 28px;
@@ -1075,20 +813,15 @@ body.is-opening
 .opening-step {
   position: absolute;
 
-  width:
-    calc(100% - 50px);
-
+  width: calc(100% - 50px);
   max-width: 900px;
 
   opacity: 0;
-
   visibility: hidden;
 
   pointer-events: none;
 
-  transform:
-    translateY(18px)
-    scale(0.97);
+  transform: translateY(18px) scale(0.97);
 
   transition:
     opacity 0.28s ease,
@@ -1098,14 +831,11 @@ body.is-opening
 
 .opening-step.is-active {
   opacity: 1;
-
   visibility: visible;
 
   pointer-events: auto;
 
-  transform:
-    translateY(0)
-    scale(1);
+  transform: translateY(0) scale(1);
 }
 
 .opening-step-label {
@@ -1116,23 +846,19 @@ body.is-opening
   text-align: center;
 
   font-size: 11px;
-
   font-weight: 1000;
-
   letter-spacing: 4px;
 
-  color:
-    rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.45);
 }
 
 
 /* =========================================================
-   ÉTAPE PENALTY
+   PENALTY
    ========================================================= */
 
 .opening-step-goal {
   width: 100%;
-
   max-width: none;
 
   inset: 0;
@@ -1144,59 +870,45 @@ body.is-opening
 
   overflow: hidden;
 
-  perspective: 1000px;
-
   background:
-    linear-gradient(
-      to bottom,
-      rgba(13, 45, 72, 0.15) 0%,
-      rgba(3, 18, 29, 0.05) 35%,
-      rgba(0,0,0,0.2) 100%
+    radial-gradient(
+      ellipse at 50% 12%,
+      rgba(45,111,166,0.65),
+      rgba(7,26,43,0.6) 38%,
+      rgba(1,7,12,0.92) 72%
     );
 }
 
 
 /* =========================================================
-   TRIBUNES / AMBIANCE
+   TRIBUNES AU FOND
    ========================================================= */
 
-.opening-goal-scene::before,
-.opening-goal-scene::after {
+.opening-goal-scene::before {
   content: "";
 
   position: absolute;
-
   z-index: 1;
 
-  pointer-events: none;
-}
-
-.opening-goal-scene::before {
   left: 0;
   right: 0;
   top: 0;
 
-  height: 29%;
+  height: 32%;
 
-  opacity: 0.55;
+  opacity: 0.42;
 
   background:
-    repeating-linear-gradient(
-      90deg,
-      rgba(255,255,255,0.09) 0 2px,
-      transparent 2px 8px
-    ),
-    linear-gradient(
-      to bottom,
-      rgba(9, 31, 49, 0.15),
-      rgba(0,0,0,0.58)
-    );
+    radial-gradient(circle, rgba(255,255,255,0.8) 0 1px, transparent 2px);
+
+  background-size: 9px 8px;
 
   mask-image:
     linear-gradient(
       to bottom,
-      #000,
-      transparent
+      rgba(0,0,0,1),
+      rgba(0,0,0,0.75) 55%,
+      transparent 100%
     );
 }
 
@@ -1205,123 +917,102 @@ body.is-opening
    FEUX D'ARTIFICE
    ========================================================= */
 
-/*
-   Le futur JS ajoutera :
-   .is-celebrating
-   sur #opening-goal-scene
-*/
-
 .opening-goal-scene.is-celebrating::before {
+  height: 45%;
+
   opacity: 1;
 
   background:
     radial-gradient(
-      circle at 15% 25%,
+      circle at 17% 27%,
+      rgba(255,255,255,1) 0 3px,
+      transparent 4px
+    ),
+    repeating-conic-gradient(
+      from 0deg at 17% 27%,
+      rgba(255,218,70,0.95) 0deg 3deg,
+      transparent 3deg 17deg
+    ),
+
+    radial-gradient(
+      circle at 82% 24%,
+      rgba(255,255,255,1) 0 3px,
+      transparent 4px
+    ),
+    repeating-conic-gradient(
+      from 8deg at 82% 24%,
+      rgba(81,192,255,0.95) 0deg 3deg,
+      transparent 3deg 18deg
+    ),
+
+    radial-gradient(
+      circle at 38% 13%,
       rgba(255,255,255,1) 0 2px,
       transparent 3px
     ),
-    radial-gradient(
-      circle at 15% 25%,
-      transparent 0 20px,
-      rgba(255,229,94,0.9) 21px 23px,
-      transparent 24px
+    repeating-conic-gradient(
+      from 4deg at 38% 13%,
+      rgba(255,106,205,0.95) 0deg 3deg,
+      transparent 3deg 20deg
     ),
+
     radial-gradient(
-      circle at 82% 22%,
+      circle at 65% 12%,
       rgba(255,255,255,1) 0 2px,
       transparent 3px
     ),
-    radial-gradient(
-      circle at 82% 22%,
-      transparent 0 25px,
-      rgba(104,207,255,0.9) 26px 28px,
-      transparent 29px
-    ),
-    radial-gradient(
-      circle at 34% 13%,
-      transparent 0 18px,
-      rgba(255,130,220,0.9) 19px 21px,
-      transparent 22px
-    ),
-    radial-gradient(
-      circle at 67% 15%,
-      transparent 0 22px,
-      rgba(112,255,154,0.9) 23px 25px,
-      transparent 26px
+    repeating-conic-gradient(
+      from 12deg at 65% 12%,
+      rgba(105,255,158,0.95) 0deg 3deg,
+      transparent 3deg 19deg
     );
 
-  animation:
-    fireworksA
-    0.8s
-    ease-out
-    forwards;
+  mask-image: none;
+
+  animation: fireworksBurst 0.85s ease-out forwards;
+}
+
+.opening-goal-scene::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  z-index: 6;
+
+  pointer-events: none;
+
+  opacity: 0;
 }
 
 .opening-goal-scene.is-celebrating::after {
-  inset: 0;
-
-  z-index: 8;
-
-  opacity: 0;
-
   background:
-    radial-gradient(
-      circle at 24% 31%,
-      rgba(255,218,81,0.95) 0 2px,
-      transparent 3px
-    ),
-    radial-gradient(
-      circle at 76% 28%,
-      rgba(91,196,255,0.95) 0 2px,
-      transparent 3px
-    ),
-    radial-gradient(
-      circle at 48% 18%,
-      rgba(255,112,189,0.9) 0 2px,
-      transparent 3px
-    );
+    radial-gradient(circle at 10% 20%, #fff 0 2px, transparent 3px),
+    radial-gradient(circle at 20% 32%, #ffd648 0 2px, transparent 3px),
+    radial-gradient(circle at 31% 15%, #ff77cd 0 2px, transparent 3px),
+    radial-gradient(circle at 44% 24%, #71ddff 0 2px, transparent 3px),
+    radial-gradient(circle at 57% 12%, #fff 0 2px, transparent 3px),
+    radial-gradient(circle at 68% 28%, #73ff9c 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 14%, #ffd648 0 2px, transparent 3px),
+    radial-gradient(circle at 89% 27%, #74cfff 0 2px, transparent 3px);
 
   background-size:
-    20px 20px,
-    24px 24px,
-    28px 28px;
+    65px 65px,
+    72px 72px,
+    82px 82px,
+    90px 90px,
+    75px 75px,
+    85px 85px,
+    95px 95px,
+    70px 70px;
 
-  animation:
-    fireworksParticles
-    0.9s
-    ease-out
-    forwards;
+  animation: fireworkParticles 0.9s ease-out forwards;
 }
 
-@keyframes fireworksA {
-
+@keyframes fireworksBurst {
   0% {
     opacity: 0;
-
-    transform:
-      scale(0.2);
-  }
-
-  30% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-
-    transform:
-      scale(1.5);
-  }
-}
-
-@keyframes fireworksParticles {
-
-  0% {
-    opacity: 0;
-
-    transform:
-      scale(0.4)
-      translateY(0);
+    transform: scale(0.35);
   }
 
   25% {
@@ -1330,149 +1021,148 @@ body.is-opening
 
   100% {
     opacity: 0;
+    transform: scale(1.3);
+  }
+}
 
-    transform:
-      scale(1.3)
-      translateY(70px);
+@keyframes fireworkParticles {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.2) translateY(40px);
   }
 }
 
 
 /* =========================================================
-   PROJECTEURS STADE
+   PROJECTEURS
    ========================================================= */
 
 .goal-stadium-light {
   position: absolute;
+  z-index: 5;
 
-  z-index: 2;
+  top: -70px;
 
-  width: 300px;
-  height: 470px;
+  width: 320px;
+  height: 430px;
 
-  top: -100px;
+  opacity: 0.2;
 
-  opacity: 0.28;
+  filter: blur(28px);
 
-  filter: blur(26px);
+  pointer-events: none;
 }
 
 .goal-stadium-light-left {
-  left: 2%;
+  left: 0;
 
-  transform:
-    rotate(-25deg);
+  transform: rotate(-28deg);
 
   background:
     linear-gradient(
-      rgba(255,255,255,0.82),
-      transparent 72%
+      rgba(255,255,255,0.85),
+      rgba(92,184,255,0.22),
+      transparent
     );
 }
 
 .goal-stadium-light-right {
-  right: 2%;
+  right: 0;
 
-  transform:
-    rotate(25deg);
+  transform: rotate(28deg);
 
   background:
     linear-gradient(
-      rgba(255,255,255,0.82),
-      transparent 72%
+      rgba(255,255,255,0.85),
+      rgba(92,184,255,0.22),
+      transparent
     );
 }
 
 
 /* =========================================================
    TERRAIN
+
+   IMPORTANT :
+   plus de perspective rotateX.
+
+   Le terrain est un vrai trapèze allant
+   directement jusqu'au pied des cages.
    ========================================================= */
 
 .goal-pitch {
   position: absolute;
-
   z-index: 2;
 
-  left: -12%;
-  right: -12%;
+  left: 50%;
+  top: 28%;
 
-  bottom: -9%;
+  width: 118%;
+  height: 78%;
 
-  height: 84%;
+  transform: translateX(-50%);
+
+  clip-path:
+    polygon(
+      35% 0%,
+      65% 0%,
+      100% 100%,
+      0% 100%
+    );
 
   overflow: hidden;
 
-  transform:
-    perspective(900px)
-    rotateX(58deg);
-
-  transform-origin:
-    bottom center;
-
   background:
-    repeating-linear-gradient(
+    linear-gradient(
       90deg,
-      #08603a 0,
-      #08603a 105px,
-      #0a7042 105px,
-      #0a7042 210px
+      rgba(255,255,255,0.018) 0 12.5%,
+      rgba(0,0,0,0.045) 12.5% 25%,
+      rgba(255,255,255,0.018) 25% 37.5%,
+      rgba(0,0,0,0.045) 37.5% 50%,
+      rgba(255,255,255,0.018) 50% 62.5%,
+      rgba(0,0,0,0.045) 62.5% 75%,
+      rgba(255,255,255,0.018) 75% 87.5%,
+      rgba(0,0,0,0.045) 87.5% 100%
+    ),
+    linear-gradient(
+      to bottom,
+      #0a743f 0%,
+      #08713e 24%,
+      #076b3a 55%,
+      #086338 100%
     );
 
-  border-top:
-    2px solid
-    rgba(255,255,255,0.38);
-
   box-shadow:
-    inset 0 20px 80px
-    rgba(0,0,0,0.17);
+    inset 0 20px 50px rgba(0,0,0,0.12);
 }
 
 
-/* =========================================================
-   SURFACE DE RÉPARATION
-   ========================================================= */
-
-.goal-pitch-line {
-  position: absolute;
-
-  left: 50%;
-  top: -3%;
-
-  width: 58%;
-  height: 54%;
-
-  transform:
-    translateX(-50%);
-
-  border:
-    4px solid
-    rgba(255,255,255,0.75);
-
-  border-top: 0;
-}
-
-
-/* PETITE SURFACE */
+/* LIGNE DE BUT */
 
 .goal-pitch::before {
   content: "";
 
   position: absolute;
 
-  left: 50%;
-  top: -2%;
+  left: 35%;
+  right: 35%;
+  top: 4%;
 
-  width: 30%;
-  height: 22%;
+  height: 3px;
 
-  transform:
-    translateX(-50%);
+  background: rgba(255,255,255,0.9);
 
-  border:
-    4px solid
-    rgba(255,255,255,0.72);
-
-  border-top: 0;
+  box-shadow:
+    0 0 4px rgba(255,255,255,0.3);
 }
 
 
@@ -1482,30 +1172,57 @@ body.is-opening
   content: "";
 
   position: absolute;
-
-  z-index: 3;
+  z-index: 4;
 
   left: 50%;
-  top: 43%;
+  top: 55%;
 
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
 
-  transform:
-    translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 
   border-radius: 50%;
 
-  background:
-    rgba(255,255,255,0.95);
+  background: #fff;
 
   box-shadow:
-    0 0 10px
-    rgba(255,255,255,0.3);
+    0 0 9px rgba(255,255,255,0.55);
 }
 
 
-/* ARC DE CERCLE */
+/* =========================================================
+   GRANDE SURFACE
+   ========================================================= */
+
+.goal-pitch-line {
+  position: absolute;
+
+  left: 50%;
+  top: 3%;
+
+  width: 52%;
+  height: 50%;
+
+  transform:
+    translateX(-50%)
+    perspective(700px)
+    rotateX(22deg);
+
+  transform-origin: center top;
+
+  border-left:
+    3px solid rgba(255,255,255,0.8);
+
+  border-right:
+    3px solid rgba(255,255,255,0.8);
+
+  border-bottom:
+    3px solid rgba(255,255,255,0.8);
+}
+
+
+/* PETITE SURFACE */
 
 .goal-pitch-line::before {
   content: "";
@@ -1513,65 +1230,78 @@ body.is-opening
   position: absolute;
 
   left: 50%;
-  bottom: -23%;
+  top: -1px;
 
-  width: 135px;
-  height: 75px;
+  width: 51%;
+  height: 35%;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
+
+  border-left:
+    3px solid rgba(255,255,255,0.76);
+
+  border-right:
+    3px solid rgba(255,255,255,0.76);
+
+  border-bottom:
+    3px solid rgba(255,255,255,0.76);
+}
+
+
+/* ARC DE CERCLE */
+
+.goal-pitch-line::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  bottom: -56px;
+
+  width: 150px;
+  height: 85px;
+
+  transform: translateX(-50%);
 
   border:
-    4px solid
-    rgba(255,255,255,0.65);
+    3px solid rgba(255,255,255,0.75);
 
   border-top: 0;
 
   border-radius:
-    0 0 90px 90px;
+    0 0 100px 100px;
 }
 
 
 /* =========================================================
-   CAGE
+   CAGES
+
+   Le bas des cages est placé directement
+   sur le début du terrain.
    ========================================================= */
 
 .opening-goal {
   position: absolute;
-
-  z-index: 7;
-
-  width:
-    clamp(
-      280px,
-      46vw,
-      500px
-    );
-
-  height:
-    clamp(
-      150px,
-      25vw,
-      260px
-    );
+  z-index: 25;
 
   left: 50%;
-  top: 13%;
+  bottom: 66%;
 
-  transform:
-    translateX(-50%);
+  width: clamp(320px, 48vw, 520px);
+  height: clamp(170px, 25vw, 270px);
+
+  transform: translateX(-50%);
 
   filter:
-    drop-shadow(
-      0 16px 24px
-      rgba(0,0,0,0.6)
-    );
+    drop-shadow(0 18px 20px rgba(0,0,0,0.55));
 }
+
+
+/* POTEAUX */
 
 .goal-post {
   position: absolute;
-
-  z-index: 7;
+  z-index: 30;
 
   top: 0;
   bottom: 0;
@@ -1583,14 +1313,14 @@ body.is-opening
   background:
     linear-gradient(
       90deg,
-      #b8bec4,
-      #ffffff 45%,
-      #b1b8bf
+      #b9c0c6,
+      #fff 42%,
+      #d5dade 67%,
+      #aeb5bc
     );
 
   box-shadow:
-    0 0 8px
-    rgba(255,255,255,0.2);
+    0 0 7px rgba(255,255,255,0.45);
 }
 
 .goal-post-left {
@@ -1601,10 +1331,12 @@ body.is-opening
   right: 0;
 }
 
+
+/* BARRE */
+
 .goal-crossbar {
   position: absolute;
-
-  z-index: 8;
+  z-index: 31;
 
   top: 0;
   left: 0;
@@ -1616,13 +1348,15 @@ body.is-opening
 
   background:
     linear-gradient(
-      #ffffff,
-      #bec5cb
+      #fff,
+      #dce1e5 50%,
+      #aeb5bc
     );
 
   box-shadow:
-    0 0 8px
-    rgba(255,255,255,0.18);
+    0 0 9px rgba(255,255,255,0.42);
+
+  transform-origin: center;
 }
 
 
@@ -1632,451 +1366,467 @@ body.is-opening
 
 .goal-net {
   position: absolute;
+  z-index: 22;
 
-  z-index: 4;
+  inset: 8px 8px 0;
 
-  inset:
-    8px
-    8px
-    0;
+  opacity: 0.62;
 
-  opacity: 0.64;
-
-  transform-origin:
-    center top;
+  transform-origin: center top;
 
   background-image:
     linear-gradient(
-      rgba(255,255,255,0.28) 1px,
+      rgba(255,255,255,0.25) 1px,
       transparent 1px
     ),
     linear-gradient(
       90deg,
-      rgba(255,255,255,0.28) 1px,
+      rgba(255,255,255,0.25) 1px,
       transparent 1px
     );
 
-  background-size:
-    19px 19px;
+  background-size: 20px 20px;
 
   border:
-    1px solid
-    rgba(255,255,255,0.15);
-
-  transform:
-    perspective(300px)
-    rotateX(-4deg);
+    1px solid rgba(255,255,255,0.12);
 }
 
 .goal-net.is-hit {
-  animation:
-    goalNetHit
-    0.62s
-    ease-out;
+  animation: netHit 0.62s ease-out;
 }
 
-@keyframes goalNetHit {
-
+@keyframes netHit {
   0% {
-    transform:
-      perspective(300px)
-      rotateX(-4deg)
-      scale(1);
+    transform: scale(1);
   }
 
-  22% {
+  18% {
     transform:
-      perspective(300px)
-      rotateX(-12deg)
-      scaleX(1.06)
-      scaleY(1.16)
-      translateY(7px);
+      perspective(400px)
+      rotateX(-13deg)
+      scaleX(1.04)
+      scaleY(1.18)
+      translateY(8px);
   }
 
-  45% {
+  40% {
     transform:
-      perspective(300px)
-      rotateX(0deg)
       scaleX(0.97)
       scaleY(0.94);
   }
 
-  70% {
+  64% {
     transform:
-      perspective(300px)
-      rotateX(-7deg)
-      scaleX(1.03)
-      scaleY(1.06);
+      scaleX(1.025)
+      scaleY(1.07);
   }
 
   100% {
-    transform:
-      perspective(300px)
-      rotateX(-4deg)
-      scale(1);
+    transform: scale(1);
+  }
+}
+
+
+/* =========================================================
+   BARRE TOUCHÉE
+   ========================================================= */
+
+.opening-goal.is-crossbar-hit .goal-crossbar {
+  animation: crossbarHit 0.32s ease-out;
+}
+
+@keyframes crossbarHit {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 0 9px rgba(255,255,255,0.42);
+  }
+
+  15% {
+    transform: translateY(-5px);
+
+    box-shadow:
+      0 0 18px rgba(255,255,255,0.95),
+      0 0 35px rgba(105,205,255,0.85);
+  }
+
+  35% {
+    transform: translateY(4px);
+  }
+
+  55% {
+    transform: translateY(-3px);
+  }
+
+  75% {
+    transform: translateY(2px);
+  }
+
+  100% {
+    transform: translateY(0);
+
+    box-shadow:
+      0 0 9px rgba(255,255,255,0.42);
   }
 }
 
 
 /* =========================================================
    BALLON
-   ========================================================= */
 
-/*
-   POSITION DE DÉPART :
-   juste au-dessus du point de penalty.
-*/
+   Cette fois on travaille avec TOP,
+   donc la trajectoire correspond visuellement
+   à des points précis dans l'écran.
+   ========================================================= */
 
 .opening-ball {
   position: absolute;
 
+  /*
+   * Le ballon reste derrière les poteaux/filet
+   * lorsqu'il arrive dans les cages.
+   */
   z-index: 20;
 
   left: 50%;
-  bottom: 23%;
+  top: 66%;
 
-  font-size:
-    clamp(
-      62px,
-      9vw,
-      92px
-    );
+  font-size: clamp(66px, 9vw, 96px);
 
   line-height: 1;
 
   user-select: none;
 
   transform:
-    translate(-50%, -55px)
-    scale(0.9);
+    translate(-50%, -85px)
+    scale(1);
+
+  transform-origin: center;
 
   filter:
     drop-shadow(
-      0 13px 12px
-      rgba(0,0,0,0.6)
+      0 14px 12px rgba(0,0,0,0.6)
     );
 
   will-change:
     left,
-    bottom,
+    top,
     transform;
 }
 
 
 /* =========================================================
-   PENALTY ZIDANE — 2,5 SECONDES
+   TRAJECTOIRE PANENKA — 2,5 S
+
+   0.00 → 0.35 : chute
+   0.35 → 0.50 : ballon posé / compression
+   0.50 → 1.45 : tir en cloche
+   1.45        : BARRE
+   1.45 → 1.90 : chute verticale
+   1.90        : LIGNE
+   1.90 → 2.05 : rebond
+   2.05 → 2.50 : BUT
    ========================================================= */
 
 .opening-ball.is-shooting {
   animation:
     zidanePenalty
     2.5s
-    cubic-bezier(.2,.72,.23,1)
+    linear
     forwards;
 }
 
 
-/*
-   DÉROULÉ :
-
-   0 → 14 %
-   le ballon tombe sur le point de penalty
-
-   14 → 20 %
-   petite compression / préparation
-
-   20 → 54 %
-   tir piqué vers la barre
-
-   58 %
-   BARRE
-
-   58 → 73 %
-   rebond vers la ligne
-
-   76 %
-   rebond au sol / ligne
-
-   76 → 100 %
-   ballon remonte légèrement et finit dans le filet
-*/
-
 @keyframes zidanePenalty {
 
-  /* BALLON LÂCHÉ */
+  /* -------------------------------------------------------
+     BALLON SUSPENDU
+     ------------------------------------------------------- */
 
   0% {
     left: 50%;
-    bottom: 23%;
+    top: 66%;
 
     transform:
-      translate(-50%, -72px)
-      scale(0.9)
+      translate(-50%, -90px)
+      scale(1)
       rotate(0deg);
   }
 
 
+  /* -------------------------------------------------------
+     CHUTE SUR LE POINT DE PENALTY
+     ------------------------------------------------------- */
+
   8% {
     left: 50%;
-    bottom: 23%;
+    top: 66%;
 
     transform:
-      translate(-50%, -28px)
-      scale(0.94)
+      translate(-50%, -40px)
+      scale(1)
       rotate(35deg);
   }
 
-
   14% {
     left: 50%;
-    bottom: 23%;
+    top: 66%;
 
     transform:
       translate(-50%, 0)
-      scale(0.98)
+      scale(1)
       rotate(65deg);
   }
 
 
-  /* PETIT ÉCRASEMENT */
+  /* -------------------------------------------------------
+     PETITE COMPRESSION AU SOL
+     ------------------------------------------------------- */
 
   18% {
     left: 50%;
-    bottom: 23%;
+    top: 66%;
 
     transform:
-      translate(-50%, 2px)
-      scaleX(1.05)
-      scaleY(0.92)
-      rotate(75deg);
+      translate(-50%, 3px)
+      scaleX(1.08)
+      scaleY(0.88)
+      rotate(72deg);
   }
 
 
-  /* DÉPART DU TIR */
+  /* -------------------------------------------------------
+     DÉPART DE LA PANENKA
+     ------------------------------------------------------- */
 
-  22% {
+  21% {
     left: 50%;
-    bottom: 25%;
+    top: 63%;
 
     transform:
       translate(-50%, 0)
-      scale(0.92)
+      scale(0.95)
       rotate(115deg);
   }
 
-
-  32% {
+  29% {
     left: 49%;
-    bottom: 38%;
+    top: 53%;
 
     transform:
       translate(-50%, 0)
-      scale(0.76)
-      rotate(250deg);
+      scale(0.81)
+      rotate(240deg);
   }
 
-
-  43% {
+  38% {
     left: 50.5%;
-    bottom: 52%;
+    top: 40%;
 
     transform:
       translate(-50%, 0)
-      scale(0.58)
-      rotate(430deg);
+      scale(0.65)
+      rotate(390deg);
   }
 
+  47% {
+    left: 49.5%;
+    top: 27%;
 
-  52% {
+    transform:
+      translate(-50%, 0)
+      scale(0.5)
+      rotate(540deg);
+  }
+
+  54% {
     left: 50%;
-    bottom: 62%;
+    top: 17%;
 
     transform:
       translate(-50%, 0)
-      scale(0.43)
-      rotate(610deg);
+      scale(0.39)
+      rotate(650deg);
   }
 
 
-  /* CONTACT BARRE */
+  /* -------------------------------------------------------
+     BARRE — 58 % = 1,45 s
+
+     Le ballon arrive vraiment tout en haut
+     de la cage avant de repartir vers le bas.
+     ------------------------------------------------------- */
 
   58% {
     left: 50%;
-    bottom: 67%;
-
-    transform:
-      translate(-50%, 0)
-      scale(0.36)
-      rotate(720deg);
-  }
-
-
-  /* REBOND VERS LE BAS */
-
-  64% {
-    left: 50.3%;
-    bottom: 58%;
+    top: 8.5%;
 
     transform:
       translate(-50%, 0)
       scale(0.34)
-      rotate(790deg);
+      rotate(720deg);
   }
 
+
+  /* -------------------------------------------------------
+     REBOND DE LA BARRE
+
+     Changement brutal de direction.
+     ------------------------------------------------------- */
+
+  61% {
+    left: 50.2%;
+    top: 12%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.33)
+      rotate(760deg);
+  }
+
+  66% {
+    left: 50%;
+    top: 19%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.31)
+      rotate(815deg);
+  }
 
   71% {
     left: 49.8%;
-    bottom: 49%;
+    top: 26%;
 
     transform:
       translate(-50%, 0)
-      scale(0.32)
-      rotate(860deg);
+      scale(0.29)
+      rotate(865deg);
   }
 
 
-  /* REBOND SUR / PRÈS DE LA LIGNE */
+  /* -------------------------------------------------------
+     LIGNE — 76 % = 1,90 s
+
+     On écrase légèrement le ballon pour
+     rendre le contact au sol évident.
+     ------------------------------------------------------- */
 
   76% {
     left: 50%;
-    bottom: 45%;
+    top: 31%;
 
     transform:
       translate(-50%, 0)
-      scaleX(0.34)
-      scaleY(0.28)
-      rotate(910deg);
+      scaleX(0.30)
+      scaleY(0.23)
+      rotate(920deg);
   }
 
 
-  /* LE BALLON RENTRE */
+  /* -------------------------------------------------------
+     PETIT REBOND
+     ------------------------------------------------------- */
 
-  82% {
+  79% {
     left: 50%;
-    bottom: 48%;
-
-    transform:
-      translate(-50%, 0)
-      scale(0.3)
-      rotate(980deg);
-  }
-
-
-  90% {
-    left: 50%;
-    bottom: 52%;
+    top: 27.5%;
 
     transform:
       translate(-50%, 0)
       scale(0.27)
-      rotate(1080deg);
+      rotate(960deg);
   }
 
 
-  100% {
+  /* -------------------------------------------------------
+     LE BALLON PASSE LA LIGNE
+     ------------------------------------------------------- */
+
+  82% {
     left: 50%;
-    bottom: 54%;
+    top: 29%;
 
     transform:
       translate(-50%, 0)
-      scale(0.24)
+      scale(0.25)
+      rotate(1000deg);
+  }
+
+
+  /* -------------------------------------------------------
+     IL ENTRE DANS LE FILET
+     ------------------------------------------------------- */
+
+  87% {
+    left: 50%;
+    top: 25%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.23)
+      rotate(1060deg);
+  }
+
+  93% {
+    left: 50%;
+    top: 23%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.21)
+      rotate(1140deg);
+  }
+
+  100% {
+    left: 50%;
+    top: 24%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.20)
       rotate(1200deg);
   }
 }
 
 
 /* =========================================================
-   EFFET CONTACT BARRE
-   ========================================================= */
-
-/*
-   Le prochain JS pourra ajouter cette classe
-   au moment exact du contact.
-*/
-
-.opening-goal.is-crossbar-hit
-.goal-crossbar {
-  animation:
-    crossbarHit
-    0.28s
-    ease-out;
-}
-
-@keyframes crossbarHit {
-
-  0% {
-    transform:
-      translateY(0);
-  }
-
-  25% {
-    transform:
-      translateY(-4px);
-  }
-
-  50% {
-    transform:
-      translateY(3px);
-  }
-
-  75% {
-    transform:
-      translateY(-2px);
-  }
-
-  100% {
-    transform:
-      translateY(0);
-  }
-}
-
-
-/* =========================================================
-   IMPACT DU BUT
+   IMPACT BUT
    ========================================================= */
 
 .opening-goal-impact {
   position: absolute;
-
-  z-index: 18;
+  z-index: 35;
 
   left: 50%;
-  top: 36%;
+  top: 27%;
 
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 
-  transform:
-    translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 
   border-radius: 50%;
 
   opacity: 0;
 
-  background: #ffffff;
+  background: #fff;
 
   box-shadow:
-    0 0 30px
-    #ffffff,
-    0 0 90px
-    rgba(92, 194, 255, 0.95);
+    0 0 30px #fff,
+    0 0 80px rgba(89,196,255,0.95);
 }
 
 .opening-goal-impact.is-active {
-  animation:
-    goalImpact
-    0.55s
-    ease-out;
+  animation: goalImpact 0.55s ease-out;
 }
 
 @keyframes goalImpact {
-
   0% {
     opacity: 1;
 
     transform:
       translate(-50%, -50%)
-      scale(0.25);
+      scale(0.3);
   }
 
   35% {
@@ -2084,7 +1834,7 @@ body.is-opening
 
     transform:
       translate(-50%, -50%)
-      scale(3.8);
+      scale(3.5);
   }
 
   100% {
@@ -2098,57 +1848,44 @@ body.is-opening
 
 
 /* =========================================================
-   BUT !
+   TEXTE BUT
    ========================================================= */
 
 .opening-goal-text {
   position: absolute;
-
-  z-index: 30;
+  z-index: 40;
 
   left: 50%;
-  top: 57%;
+  top: 53%;
 
-  transform:
-    translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 
-  color: #ffffff;
+  color: #fff;
 
-  font-size:
-    clamp(
-      50px,
-      10vw,
-      100px
-    );
+  font-size: clamp(52px, 11vw, 110px);
 
   font-weight: 1000;
-
   font-style: italic;
 
-  letter-spacing: -3px;
+  letter-spacing: -4px;
 
   text-shadow:
-    0 0 20px
-    rgba(255,255,255,0.55),
-    0 8px 28px
-    rgba(0,0,0,0.7);
+    0 0 22px rgba(255,255,255,0.75),
+    0 7px 28px rgba(0,0,0,0.7);
 }
 
 .opening-goal-text:not([hidden]) {
   animation:
-    goalTextAppear
-    0.48s
-    cubic-bezier(.15,.9,.25,1);
+    goalText 0.48s cubic-bezier(.15,.9,.25,1);
 }
 
-@keyframes goalTextAppear {
-
+@keyframes goalText {
   0% {
     opacity: 0;
 
     transform:
       translate(-50%, -50%)
-      scale(0.3);
+      scale(0.25);
   }
 
   55% {
@@ -2156,7 +1893,7 @@ body.is-opening
 
     transform:
       translate(-50%, -50%)
-      scale(1.14);
+      scale(1.16);
   }
 
   100% {
@@ -2181,11 +1918,7 @@ body.is-opening
   margin: 0 auto;
 
   display: grid;
-
-  grid-template-columns:
-    1fr
-    auto
-    1fr;
+  grid-template-columns: 1fr auto 1fr;
 
   gap: 26px;
 
@@ -2198,11 +1931,8 @@ body.is-opening
   padding: 24px;
 
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
-
   justify-content: center;
 
   border-radius: 24px;
@@ -2214,57 +1944,39 @@ body.is-opening
       rgba(255,255,255,0.035)
     );
 
-  border:
-    1px solid
-    rgba(255,255,255,0.11);
+  border: 1px solid rgba(255,255,255,0.11);
 
-  backdrop-filter:
-    blur(14px);
+  backdrop-filter: blur(14px);
 
   box-shadow:
-    0 18px 45px
-    rgba(0,0,0,0.22);
+    0 18px 45px rgba(0,0,0,0.22);
 }
 
 .opening-identity-small-label {
   margin-bottom: 12px;
 
   font-size: 10px;
-
   font-weight: 1000;
-
   letter-spacing: 2.5px;
 
-  color:
-    rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.4);
 }
 
 .opening-animation-flag {
   margin-bottom: 10px;
 
-  font-size:
-    clamp(
-      55px,
-      10vw,
-      90px
-    );
+  font-size: clamp(55px, 10vw, 90px);
 
   line-height: 1;
 
   filter:
     drop-shadow(
-      0 10px 12px
-      rgba(0,0,0,0.25)
+      0 10px 12px rgba(0,0,0,0.25)
     );
 }
 
 .opening-animation-nationality {
-  font-size:
-    clamp(
-      22px,
-      4vw,
-      36px
-    );
+  font-size: clamp(22px, 4vw, 36px);
 
   font-weight: 1000;
 
@@ -2278,30 +1990,21 @@ body.is-opening
   height: 78px;
 
   display: grid;
-
   place-items: center;
 
   border-radius: 50%;
 
   font-size: 38px;
 
-  background:
-    rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.08);
 
-  border:
-    1px solid
-    rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
 .opening-animation-club {
   max-width: 310px;
 
-  font-size:
-    clamp(
-      21px,
-      4vw,
-      34px
-    );
+  font-size: clamp(21px, 4vw, 34px);
 
   line-height: 1.1;
 
@@ -2336,11 +2039,7 @@ body.is-opening
   margin: 0 auto;
 
   display: grid;
-
-  grid-template-columns:
-    1fr
-    auto
-    1fr;
+  grid-template-columns: 1fr auto 1fr;
 
   align-items: center;
 
@@ -2352,39 +2051,27 @@ body.is-opening
   min-height: 240px;
 
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
-
   justify-content: center;
 
   border-radius: 24px;
 
-  background:
-    rgba(255,255,255,0.035);
+  background: rgba(255,255,255,0.035);
 }
 
 .opening-rating-small {
   font-size: 10px;
-
   font-weight: 1000;
-
   letter-spacing: 3px;
 
-  color:
-    rgba(255,255,255,0.38);
+  color: rgba(255,255,255,0.38);
 }
 
 .opening-animation-rating {
   margin-top: 6px;
 
-  font-size:
-    clamp(
-      90px,
-      17vw,
-      165px
-    );
+  font-size: clamp(90px, 17vw, 165px);
 
   line-height: 0.9;
 
@@ -2396,12 +2083,7 @@ body.is-opening
 .opening-animation-position {
   margin-top: 12px;
 
-  font-size:
-    clamp(
-      55px,
-      10vw,
-      95px
-    );
+  font-size: clamp(55px, 10vw, 95px);
 
   line-height: 0.9;
 
@@ -2422,34 +2104,27 @@ body.is-opening
 
 
 /* =========================================================
-   BOUTONS SUIVANT / RÉVÉLER
+   BOUTONS
    ========================================================= */
 
 .opening-next-button {
-  margin:
-    32px
-    auto 0;
+  margin: 32px auto 0;
 
   min-width: 190px;
-
   min-height: 52px;
 
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
 
   gap: 12px;
 
-  padding:
-    0 24px;
+  padding: 0 24px;
 
   border-radius: 14px;
 
   border:
-    1px solid
-    rgba(86,215,138,0.48);
+    1px solid rgba(86,215,138,0.48);
 
   color: #052816;
 
@@ -2461,18 +2136,14 @@ body.is-opening
     );
 
   font-family: inherit;
-
   font-size: 13px;
-
   font-weight: 1000;
-
   letter-spacing: 1px;
 
   cursor: pointer;
 
   box-shadow:
-    0 12px 35px
-    rgba(34,190,101,0.22);
+    0 12px 35px rgba(34,190,101,0.22);
 
   transition:
     transform 0.15s ease,
@@ -2484,13 +2155,11 @@ body.is-opening
     translateY(-2px)
     scale(1.02);
 
-  filter:
-    brightness(1.06);
+  filter: brightness(1.06);
 }
 
 .opening-next-button:active {
-  transform:
-    scale(0.98);
+  transform: scale(0.98);
 }
 
 .opening-next-button:disabled {
@@ -2517,13 +2186,12 @@ body.is-opening
     rgba(255,217,78,0.55);
 
   box-shadow:
-    0 12px 35px
-    rgba(230,181,35,0.23);
+    0 12px 35px rgba(230,181,35,0.23);
 }
 
 
 /* =========================================================
-   RÉVÉLATION
+   RÉVÉLATION FINALE
    ========================================================= */
 
 .opening-reveal {
@@ -2532,25 +2200,20 @@ body.is-opening
   text-align: center;
 
   animation:
-    finalRevealAppear
-    0.55s
-    cubic-bezier(.15,.85,.2,1);
+    finalReveal 0.55s cubic-bezier(.15,.85,.2,1);
 }
 
-@keyframes finalRevealAppear {
-
+@keyframes finalReveal {
   from {
     opacity: 0;
 
-    transform:
-      scale(0.82);
+    transform: scale(0.82);
   }
 
   to {
     opacity: 1;
 
-    transform:
-      scale(1);
+    transform: scale(1);
   }
 }
 
@@ -2565,27 +2228,14 @@ body.is-opening
   left: 50%;
   top: 50%;
 
-  transform:
-    translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 
   pointer-events: none;
 
   background:
-    radial-gradient(
-      circle at 30% 30%,
-      rgba(255,255,255,0.8) 0 2px,
-      transparent 3px
-    ),
-    radial-gradient(
-      circle at 70% 25%,
-      rgba(255,220,80,0.9) 0 2px,
-      transparent 3px
-    ),
-    radial-gradient(
-      circle at 65% 75%,
-      rgba(80,180,255,0.7) 0 2px,
-      transparent 3px
-    );
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8) 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 25%, rgba(255,220,80,0.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 65% 75%, rgba(80,180,255,0.7) 0 2px, transparent 3px);
 
   background-size:
     110px 110px,
@@ -2593,18 +2243,14 @@ body.is-opening
     190px 190px;
 
   animation:
-    finalParticles
-    10s
-    linear
-    infinite;
+    finalParticles 10s linear infinite;
 }
 
 @keyframes finalParticles {
-
   from {
     transform:
       translate(-50%, -50%)
-      rotate(0deg);
+      rotate(0);
   }
 
   to {
@@ -2616,7 +2262,6 @@ body.is-opening
 
 .revealed-wrapper {
   position: relative;
-
   z-index: 3;
 }
 
@@ -2627,31 +2272,22 @@ body.is-opening
 
 .revealed-rarity {
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
 
   margin-bottom: 14px;
 
-  padding:
-    6px
-    15px;
+  padding: 6px 15px;
 
   border-radius: 999px;
 
   font-size: 10px;
-
   font-weight: 1000;
-
   letter-spacing: 2.5px;
 
-  background:
-    rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.07);
 
-  border:
-    1px solid
-    rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
 
@@ -2662,12 +2298,7 @@ body.is-opening
 .revealed-player-card {
   position: relative;
 
-  width:
-    min(
-      92vw,
-      390px
-    );
-
+  width: min(92vw, 390px);
   min-height: 540px;
 
   margin: 0 auto;
@@ -2678,9 +2309,7 @@ body.is-opening
 
   border-radius: 30px;
 
-  border:
-    2px solid
-    rgba(255,255,255,0.22);
+  border: 2px solid rgba(255,255,255,0.22);
 
   color: #201600;
 
@@ -2693,17 +2322,14 @@ body.is-opening
     );
 
   box-shadow:
-    0 40px 120px
-    rgba(0,0,0,0.72),
-    0 0 80px
-    rgba(255,193,30,0.18);
+    0 40px 120px rgba(0,0,0,0.72),
+    0 0 80px rgba(255,193,30,0.18);
 }
 
 .revealed-player-card::before {
   content: "";
 
   position: absolute;
-
   inset: -30%;
 
   z-index: -1;
@@ -2725,16 +2351,13 @@ body.is-opening
 
 .revealed-card-rating {
   position: absolute;
-
   z-index: 6;
 
   left: 25px;
   top: 28px;
 
   display: flex;
-
   flex-direction: column;
-
   align-items: center;
 }
 
@@ -2752,13 +2375,12 @@ body.is-opening
   margin-top: 8px;
 
   font-size: 18px;
-
   font-weight: 1000;
 }
 
 
 /* =========================================================
-   IMAGE JOUEUR
+   PHOTO
    ========================================================= */
 
 .revealed-image-zone {
@@ -2767,9 +2389,7 @@ body.is-opening
   height: 390px;
 
   display: flex;
-
   align-items: flex-end;
-
   justify-content: center;
 
   overflow: hidden;
@@ -2784,8 +2404,7 @@ body.is-opening
   left: 50%;
   bottom: 10px;
 
-  transform:
-    translateX(-50%);
+  transform: translateX(-50%);
 
   border-radius: 50%;
 
@@ -2802,27 +2421,22 @@ body.is-opening
 
 .revealed-player-image {
   position: relative;
-
   z-index: 4;
 
   width: 100%;
-
   max-width: 330px;
-
   max-height: 350px;
 
   object-fit: contain;
 
   filter:
     drop-shadow(
-      0 20px 20px
-      rgba(0,0,0,0.35)
+      0 20px 20px rgba(0,0,0,0.35)
     );
 }
 
 .revealed-player-fallback {
   position: relative;
-
   z-index: 4;
 
   width: 210px;
@@ -2831,55 +2445,38 @@ body.is-opening
   margin-bottom: 40px;
 
   display: grid;
-
   place-items: center;
 
   border-radius: 50%;
 
   font-size: 60px;
-
   font-weight: 1000;
 
-  background:
-    rgba(20,50,90,0.13);
+  background: rgba(20,50,90,0.13);
 
-  border:
-    2px solid
-    rgba(20,50,90,0.22);
+  border: 2px solid rgba(20,50,90,0.22);
 }
 
 
 /* =========================================================
-   INFOS JOUEUR
+   INFOS CARTE
    ========================================================= */
 
 .revealed-player-info {
   position: relative;
-
   z-index: 5;
 
-  padding:
-    16px
-    22px
-    24px;
+  padding: 16px 22px 24px;
 
-  background:
-    rgba(255,255,255,0.13);
+  background: rgba(255,255,255,0.13);
 
-  border-top:
-    1px solid
-    rgba(80,50,0,0.13);
+  border-top: 1px solid rgba(80,50,0,0.13);
 }
 
 .revealed-player-name {
   margin: 0;
 
-  font-size:
-    clamp(
-      26px,
-      7vw,
-      36px
-    );
+  font-size: clamp(26px, 7vw, 36px);
 
   line-height: 1;
 
@@ -2892,17 +2489,13 @@ body.is-opening
   margin-top: 10px;
 
   display: flex;
-
   flex-wrap: wrap;
-
   align-items: center;
-
   justify-content: center;
 
   gap: 7px;
 
   font-size: 12px;
-
   font-weight: 800;
 
   opacity: 0.7;
@@ -2917,8 +2510,7 @@ body.is-opening
    RARETÉS
    ========================================================= */
 
-body.rarity-gold
-.revealed-player-card {
+body.rarity-gold .revealed-player-card {
   background:
     linear-gradient(
       145deg,
@@ -2928,20 +2520,16 @@ body.rarity-gold
     );
 }
 
-body.rarity-gold
-.revealed-rarity {
+body.rarity-gold .revealed-rarity {
   color: #ffd96b;
 
-  background:
-    rgba(255,204,60,0.1);
+  background: rgba(255,204,60,0.1);
 
-  border-color:
-    rgba(255,217,100,0.32);
+  border-color: rgba(255,217,100,0.32);
 }
 
 
-body.rarity-silver
-.revealed-player-card {
+body.rarity-silver .revealed-player-card {
   color: #15202a;
 
   background:
@@ -2953,14 +2541,12 @@ body.rarity-silver
     );
 }
 
-body.rarity-silver
-.revealed-rarity {
+body.rarity-silver .revealed-rarity {
   color: #e7edf2;
 }
 
 
-body.rarity-bronze
-.revealed-player-card {
+body.rarity-bronze .revealed-player-card {
   color: #29160c;
 
   background:
@@ -2973,9 +2559,8 @@ body.rarity-bronze
 }
 
 
-body.rarity-legendary
-.revealed-player-card {
-  color: #ffffff;
+body.rarity-legendary .revealed-player-card {
+  color: #fff;
 
   background:
     linear-gradient(
@@ -2987,21 +2572,16 @@ body.rarity-legendary
     );
 
   box-shadow:
-    0 40px 120px
-    rgba(0,0,0,0.72),
-    0 0 110px
-    rgba(183,76,255,0.5);
+    0 40px 120px rgba(0,0,0,0.72),
+    0 0 110px rgba(183,76,255,0.5);
 }
 
-body.rarity-legendary
-.revealed-rarity {
+body.rarity-legendary .revealed-rarity {
   color: #efb6ff;
 
-  background:
-    rgba(176,73,255,0.17);
+  background: rgba(176,73,255,0.17);
 
-  border-color:
-    rgba(217,137,255,0.4);
+  border-color: rgba(217,137,255,0.4);
 }
 
 
@@ -3013,21 +2593,18 @@ body.rarity-legendary
   margin-top: 20px;
 
   display: flex;
-
   justify-content: center;
-
   flex-wrap: wrap;
 
   gap: 6px;
 
   font-size: 14px;
 
-  color:
-    rgba(255,255,255,0.53);
+  color: rgba(255,255,255,0.53);
 }
 
 .opening-reveal-message strong {
-  color: #ffffff;
+  color: #fff;
 }
 
 
@@ -3039,9 +2616,7 @@ body.rarity-legendary
   margin-top: 22px;
 
   display: flex;
-
   flex-wrap: wrap;
-
   justify-content: center;
 
   gap: 10px;
@@ -3051,24 +2626,17 @@ body.rarity-legendary
   min-height: 44px;
 
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
 
-  padding:
-    0 18px;
+  padding: 0 18px;
 
   border-radius: 12px;
 
-  border:
-    1px solid
-    rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
 
   font-family: inherit;
-
   font-size: 13px;
-
   font-weight: 900;
 
   text-decoration: none;
@@ -3081,11 +2649,9 @@ body.rarity-legendary
 }
 
 .opening-action-button:hover {
-  transform:
-    translateY(-2px);
+  transform: translateY(-2px);
 
-  filter:
-    brightness(1.08);
+  filter: brightness(1.08);
 }
 
 .opening-action-primary {
@@ -3100,35 +2666,28 @@ body.rarity-legendary
 }
 
 .opening-action-secondary {
-  color: #ffffff;
+  color: #fff;
 
-  background:
-    rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.08);
 }
 
 .opening-action-back {
-  color:
-    rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.6);
 
   background: transparent;
 }
 
 
 /* =========================================================
-   MOBILE
+   TABLETTE / MOBILE
    ========================================================= */
 
 @media (max-width: 700px) {
 
   .opening-header {
-    grid-template-columns:
-      auto
-      1fr
-      auto;
+    grid-template-columns: auto 1fr auto;
 
-    padding:
-      10px
-      12px;
+    padding: 10px 12px;
   }
 
   .opening-brand-text {
@@ -3148,10 +2707,7 @@ body.rarity-legendary
   }
 
   .opening-main {
-    padding:
-      14px
-      7px
-      28px;
+    padding: 14px 7px 28px;
   }
 
   .opening-ready-stats {
@@ -3162,47 +2718,55 @@ body.rarity-legendary
   /* SCÈNE */
 
   .opening-tunnel {
-    height: 75vh;
+    height: 76vh;
+    min-height: 560px;
 
-    min-height: 540px;
-
-    border-radius: 16px;
-  }
-
-  .opening-stage-content {
-    padding: 14px;
-  }
-
-
-  /* CAGE */
-
-  .opening-goal {
-    top: 15%;
-
-    width: 300px;
-
-    height: 165px;
+    border-radius: 18px;
   }
 
 
   /* TERRAIN */
 
   .goal-pitch {
-    left: -32%;
-    right: -32%;
+    top: 29%;
 
-    height: 83%;
+    width: 145%;
+    height: 76%;
+
+    clip-path:
+      polygon(
+        39% 0%,
+        61% 0%,
+        100% 100%,
+        0% 100%
+      );
+  }
+
+  .goal-pitch::before {
+    left: 39%;
+    right: 39%;
   }
 
   .goal-pitch-line {
-    width: 62%;
+    width: 46%;
+    height: 49%;
+  }
+
+
+  /* CAGES */
+
+  .opening-goal {
+    bottom: 66%;
+
+    width: min(76vw, 360px);
+    height: min(40vw, 190px);
   }
 
 
   /* BALLON */
 
   .opening-ball {
-    bottom: 23%;
+    top: 67%;
 
     font-size: 68px;
   }
@@ -3238,7 +2802,7 @@ body.rarity-legendary
   }
 
 
-  /* NOTE / POSTE */
+  /* NOTE */
 
   .opening-rating-zone {
     gap: 9px;
@@ -3271,7 +2835,6 @@ body.rarity-legendary
     max-width: 390px;
 
     margin-left: auto;
-
     margin-right: auto;
 
     flex-direction: column;
@@ -3284,27 +2847,39 @@ body.rarity-legendary
 
 
 /* =========================================================
-   PETITS MOBILES
+   PETITS ÉCRANS
    ========================================================= */
 
 @media (max-width: 420px) {
 
   .opening-tunnel {
-    min-height: 515px;
+    min-height: 530px;
   }
 
   .opening-goal {
-    width: 245px;
-
+    width: 250px;
     height: 140px;
+
+    bottom: 66%;
+  }
+
+  .goal-pitch {
+    width: 160%;
+  }
+
+  .goal-pitch-line {
+    width: 42%;
+  }
+
+  .goal-pitch-line::after {
+    width: 110px;
+    height: 65px;
+
+    bottom: -45px;
   }
 
   .opening-ball {
     font-size: 60px;
-  }
-
-  .goal-pitch-line {
-    width: 70%;
   }
 
   .opening-animation-rating {
@@ -3317,7 +2892,6 @@ body.rarity-legendary
 
   .opening-next-button {
     width: 100%;
-
     max-width: 290px;
   }
 
@@ -3328,12 +2902,11 @@ body.rarity-legendary
 
 
 /* =========================================================
-   MOUVEMENTS RÉDUITS
+   ACCESSIBILITÉ
 
-   On garde le penalty :
-   c'est une étape fonctionnelle de l'opening.
-
-   On retire uniquement les animations décoratives infinies.
+   On conserve le penalty car il fait partie
+   du fonctionnement de l'opening.
+   On coupe seulement les animations infinies.
    ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
