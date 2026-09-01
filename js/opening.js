@@ -1,12 +1,11 @@
 /* =========================================================
    BEL AIR FC — OPENING.JS
 
+   VERSION TEST SANS ANIMATION
+
    PACK
-   → PENALTY 2,5 s
-   → BARRE
-   → REBOND LIGNE
-   → BUT + FEUX D'ARTIFICE
-   → NATIONALITÉ + CLUB
+   → écran NATIONALITÉ + CLUB immédiatement
+   → attente serveur directement sur cet écran
    → SUIVANT
    → NOTE + POSTE
    → RÉVÉLER
@@ -31,48 +30,10 @@
     return;
   }
 
-
   const SESSION_STORAGE_KEY =
     "fcClasse_teacherSession_v1";
 
-
-  /*
-   * Synchronisé avec :
-   *
-   * .opening-ball.is-shooting {
-   *   animation: zidanePenalty 2.5s ...
-   * }
-   */
-  const PENALTY_TIMING = {
-    total: 2500,
-
-    /*
-     * 58 % de 2500 ms
-     */
-    crossbar: 1450,
-
-    /*
-     * Vers 76 % :
-     * le rebond sur la ligne est directement
-     * géré par les keyframes CSS.
-     */
-    lineBounce: 1900,
-
-    /*
-     * Vers 82 % :
-     * le ballon commence à rentrer.
-     */
-    goal: 2050,
-
-    /*
-     * Feux + texte BUT.
-     */
-    celebration: 2070
-  };
-
-
-  const FINAL_FLASH_DURATION =
-    400;
+  const FINAL_FLASH_DURATION = 300;
 
 
   /* =======================================================
@@ -177,41 +138,6 @@
   const stepRating =
     document.getElementById(
       "opening-step-rating"
-    );
-
-
-  /* =======================================================
-     PENALTY
-     ======================================================= */
-
-  const goalScene =
-    document.getElementById(
-      "opening-goal-scene"
-    );
-
-  const openingGoal =
-    document.getElementById(
-      "opening-goal"
-    );
-
-  const openingBall =
-    document.getElementById(
-      "opening-ball"
-    );
-
-  const goalNet =
-    document.getElementById(
-      "opening-goal-net"
-    );
-
-  const goalImpact =
-    document.getElementById(
-      "opening-goal-impact"
-    );
-
-  const goalText =
-    document.getElementById(
-      "opening-goal-text"
     );
 
 
@@ -335,7 +261,6 @@
      ======================================================= */
 
   let teacherToken = null;
-
   let studentId = null;
 
   let packType =
@@ -343,18 +268,10 @@
     "standard";
 
   let openingContext = null;
-
   let openingResult = null;
 
   let isOpening = false;
-
   let transitionLocked = false;
-
-  /*
-   * Utilisé uniquement si Google met
-   * plus de 2,5 secondes.
-   */
-  let celebrationInterval = null;
 
 
   /* =======================================================
@@ -363,21 +280,7 @@
 
   function sleep(ms) {
     return new Promise(resolve => {
-      window.setTimeout(
-        resolve,
-        ms
-      );
-    });
-  }
-
-
-  function nextFrame() {
-    return new Promise(resolve => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(
-          resolve
-        );
-      });
+      setTimeout(resolve, ms);
     });
   }
 
@@ -386,8 +289,7 @@
     value,
     fallback = 0
   ) {
-    const number =
-      Number(value);
+    const number = Number(value);
 
     return Number.isFinite(number)
       ? number
@@ -414,9 +316,7 @@
       .filter(Boolean)
       .slice(0, 2)
       .map(part =>
-        part
-          .charAt(0)
-          .toUpperCase()
+        part.charAt(0).toUpperCase()
       )
       .join("");
   }
@@ -596,9 +496,7 @@
     nationality
   ) {
     const raw =
-      normalize(
-        nationality
-      );
+      normalize(nationality);
 
     const compact =
       raw.replace(
@@ -678,23 +576,21 @@
     value
   ) {
     const rarity =
-      normalizeRarity(
-        value
-      );
+      normalizeRarity(value);
 
-    switch (rarity) {
-      case "legendary":
-        return "LÉGENDE";
-
-      case "gold":
-        return "OR";
-
-      case "silver":
-        return "ARGENT";
-
-      default:
-        return "BRONZE";
+    if (rarity === "legendary") {
+      return "LÉGENDE";
     }
+
+    if (rarity === "gold") {
+      return "OR";
+    }
+
+    if (rarity === "silver") {
+      return "ARGENT";
+    }
+
+    return "BRONZE";
   }
 
 
@@ -713,13 +609,10 @@
   ) {
     clearRarityTheme();
 
-    const normalized =
-      normalizeRarity(
-        rarity
-      );
-
     document.body.classList.add(
-      `rarity-${normalized}`
+      `rarity-${normalizeRarity(
+        rarity
+      )}`
     );
   }
 
@@ -776,11 +669,6 @@
       return true;
 
     } catch (error) {
-      console.warn(
-        "Impossible de lire la session professeur.",
-        error
-      );
-
       return false;
     }
   }
@@ -829,20 +717,16 @@
   }
 
 
-  function showAnimation() {
+  function showAnimationScreen() {
     hideAllStates();
 
-    document.body.classList.add(
+    document.body.classList.remove(
       "is-opening"
     );
 
     if (animationSection) {
       animationSection.hidden =
         false;
-
-      animationSection.classList.add(
-        "is-running"
-      );
     }
   }
 
@@ -854,12 +738,6 @@
       "is-opening"
     );
 
-    if (animationSection) {
-      animationSection.classList.remove(
-        "is-running"
-      );
-    }
-
     if (revealSection) {
       revealSection.hidden =
         false;
@@ -868,19 +746,11 @@
 
 
   function showError(message) {
-    stopCelebrationHold();
-
     hideAllStates();
 
     document.body.classList.remove(
       "is-opening"
     );
-
-    if (animationSection) {
-      animationSection.classList.remove(
-        "is-running"
-      );
-    }
 
     if (errorSection) {
       errorSection.hidden =
@@ -951,111 +821,7 @@
 
 
   /* =======================================================
-     FEUX D'ARTIFICE
-     ======================================================= */
-
-  function triggerFireworks() {
-    if (!goalScene) {
-      return;
-    }
-
-    goalScene.classList.remove(
-      "is-celebrating"
-    );
-
-    void goalScene.offsetWidth;
-
-    goalScene.classList.add(
-      "is-celebrating"
-    );
-  }
-
-
-  /*
-   * Si Google dépasse les 2,5 secondes,
-   * on ne laisse PAS l'écran figé.
-   *
-   * Les feux se relancent jusqu'à ce que
-   * le résultat soit disponible.
-   */
-  function startCelebrationHold() {
-    stopCelebrationHold();
-
-    triggerFireworks();
-
-    celebrationInterval =
-      window.setInterval(
-        () => {
-          triggerFireworks();
-        },
-        850
-      );
-  }
-
-
-  function stopCelebrationHold() {
-    if (celebrationInterval !== null) {
-      window.clearInterval(
-        celebrationInterval
-      );
-
-      celebrationInterval =
-        null;
-    }
-
-    if (goalScene) {
-      goalScene.classList.remove(
-        "is-celebrating"
-      );
-    }
-  }
-
-
-  /* =======================================================
-     RESET PENALTY
-     ======================================================= */
-
-  function resetGoalScene() {
-    stopCelebrationHold();
-
-
-    if (openingBall) {
-      openingBall.classList.remove(
-        "is-shooting"
-      );
-    }
-
-
-    if (openingGoal) {
-      openingGoal.classList.remove(
-        "is-crossbar-hit"
-      );
-    }
-
-
-    if (goalNet) {
-      goalNet.classList.remove(
-        "is-hit"
-      );
-    }
-
-
-    if (goalImpact) {
-      goalImpact.classList.remove(
-        "is-active"
-      );
-    }
-
-
-    if (goalText) {
-      goalText.hidden =
-        true;
-    }
-  }
-
-
-  /* =======================================================
-     RESET COMPLET
+     RESET
      ======================================================= */
 
   function resetOpeningVisuals() {
@@ -1063,67 +829,61 @@
 
     hideAllSteps();
 
-    resetGoalScene();
-
-
     if (animationFlag) {
       animationFlag.textContent =
         "🌍";
     }
 
-
     if (animationNationality) {
       animationNationality.textContent =
-        "???";
+        "…";
     }
-
 
     if (animationClub) {
       animationClub.textContent =
-        "???";
+        "…";
     }
-
 
     if (animationRating) {
       animationRating.textContent =
         "?";
     }
 
-
     if (animationPosition) {
       animationPosition.textContent =
         "???";
     }
 
+    if (nextIdentityButton) {
+      nextIdentityButton.disabled =
+        true;
+    }
+
+    if (revealPlayerButton) {
+      revealPlayerButton.disabled =
+        true;
+    }
 
     if (revealedRarity) {
       revealedRarity.textContent =
         "JOUEUR";
     }
 
-
     if (revealedImage) {
-      revealedImage.src =
-        "";
-
-      revealedImage.hidden =
-        true;
+      revealedImage.src = "";
+      revealedImage.hidden = true;
     }
-
 
     if (revealedFallback) {
-      revealedFallback.hidden =
-        true;
+      revealedFallback.hidden = true;
     }
 
-
-    transitionLocked =
-      false;
+    transitionLocked = false;
   }
 
 
   /* =======================================================
-     CONTEXTE OPENING
+     CONTEXTE
      ======================================================= */
 
   function renderOpeningContext(
@@ -1137,19 +897,16 @@
       context?.stats ||
       {};
 
-
     if (headerStudentName) {
       headerStudentName.textContent =
         student.name ||
         "Élève";
     }
 
-
     if (readyDescription) {
       readyDescription.textContent =
         `${student.name || "L'élève"} va ouvrir son pack.`;
     }
-
 
     if (availableCount) {
       availableCount.textContent =
@@ -1158,7 +915,6 @@
         );
     }
 
-
     if (playersLeft) {
       playersLeft.textContent =
         safeNumber(
@@ -1166,12 +922,10 @@
         );
     }
 
-
     if (packTypeLabel) {
       packTypeLabel.textContent =
         "PACK STANDARD";
     }
-
 
     document.title =
       `${student.name || "Élève"} — Opening — Bel Air FC`;
@@ -1186,7 +940,6 @@
       return;
     }
 
-
     if (!studentId) {
       showError(
         "Aucun élève sélectionné."
@@ -1194,9 +947,7 @@
       return;
     }
 
-
     showLoading();
-
 
     try {
       const context =
@@ -1206,16 +957,13 @@
           packType
         );
 
-
       openingContext =
         context;
-
 
       const openings =
         context?.openings ||
         context?.stats ||
         {};
-
 
       if (
         safeNumber(
@@ -1228,7 +976,6 @@
         return;
       }
 
-
       if (
         safeNumber(
           context?.availablePlayers
@@ -1240,20 +987,13 @@
         return;
       }
 
-
       renderOpeningContext(
         context
       );
 
       showReady();
 
-
     } catch (error) {
-      console.error(
-        "Erreur préparation opening :",
-        error
-      );
-
       showError(
         error?.message ||
         "Impossible de préparer l'opening."
@@ -1263,7 +1003,7 @@
 
 
   /* =======================================================
-     PRÉCHARGEMENT IMAGE
+     PRÉCHARGER PHOTO
      ======================================================= */
 
   function preloadPlayerImage(
@@ -1282,151 +1022,7 @@
 
 
   /* =======================================================
-     PENALTY — 2,5 SECONDES
-     ======================================================= */
-
-  async function playPenaltyAnimation() {
-    resetGoalScene();
-
-    showAnimation();
-
-    showStep(
-      stepIntro
-    );
-
-
-    /*
-     * On attend deux frames pour être sûr
-     * que le navigateur a affiché le terrain.
-     */
-    await nextFrame();
-
-
-    /* -----------------------------------------------------
-       DÉPART DU BALLON
-       ----------------------------------------------------- */
-
-    if (openingBall) {
-      openingBall.classList.remove(
-        "is-shooting"
-      );
-
-      void openingBall.offsetWidth;
-
-      openingBall.classList.add(
-        "is-shooting"
-      );
-    }
-
-
-    /* -----------------------------------------------------
-       1,45 s — BARRE
-       ----------------------------------------------------- */
-
-    await sleep(
-      PENALTY_TIMING.crossbar
-    );
-
-
-    if (openingGoal) {
-      openingGoal.classList.remove(
-        "is-crossbar-hit"
-      );
-
-      void openingGoal.offsetWidth;
-
-      openingGoal.classList.add(
-        "is-crossbar-hit"
-      );
-    }
-
-
-    /* -----------------------------------------------------
-       1,90 s — REBOND LIGNE
-
-       Le mouvement du ballon est déjà
-       dans les keyframes CSS.
-
-       On ne fait volontairement aucun flash ici :
-       on doit bien voir le rebond.
-       ----------------------------------------------------- */
-
-    await sleep(
-      PENALTY_TIMING.lineBounce -
-      PENALTY_TIMING.crossbar
-    );
-
-
-    /* -----------------------------------------------------
-       2,05 s — LE BALLON RENTRE
-       ----------------------------------------------------- */
-
-    await sleep(
-      PENALTY_TIMING.goal -
-      PENALTY_TIMING.lineBounce
-    );
-
-
-    if (goalNet) {
-      goalNet.classList.remove(
-        "is-hit"
-      );
-
-      void goalNet.offsetWidth;
-
-      goalNet.classList.add(
-        "is-hit"
-      );
-    }
-
-
-    if (goalImpact) {
-      goalImpact.classList.remove(
-        "is-active"
-      );
-
-      void goalImpact.offsetWidth;
-
-      goalImpact.classList.add(
-        "is-active"
-      );
-    }
-
-
-    /* -----------------------------------------------------
-       FEUX D'ARTIFICE + BUT
-       ----------------------------------------------------- */
-
-    await sleep(
-      PENALTY_TIMING.celebration -
-      PENALTY_TIMING.goal
-    );
-
-
-    triggerFireworks();
-
-    triggerFlash();
-
-
-    if (goalText) {
-      goalText.hidden =
-        false;
-    }
-
-
-    /* -----------------------------------------------------
-       FIN EXACTE DES 2,5 SECONDES
-       ----------------------------------------------------- */
-
-    await sleep(
-      PENALTY_TIMING.total -
-      PENALTY_TIMING.celebration
-    );
-  }
-
-
-  /* =======================================================
-     NATIONALITÉ + CLUB
+     PREMIER INDICE
      ======================================================= */
 
   function prepareIdentityScreen(
@@ -1436,7 +1032,6 @@
       player?.nationality ||
       "Inconnue";
 
-
     if (animationFlag) {
       animationFlag.textContent =
         getFlagEmoji(
@@ -1444,23 +1039,26 @@
         );
     }
 
-
     if (animationNationality) {
       animationNationality.textContent =
         nationality;
     }
-
 
     if (animationClub) {
       animationClub.textContent =
         player?.club ||
         "Club inconnu";
     }
+
+    if (nextIdentityButton) {
+      nextIdentityButton.disabled =
+        false;
+    }
   }
 
 
   /* =======================================================
-     NOTE + POSTE
+     SECOND INDICE
      ======================================================= */
 
   function prepareRatingScreen(
@@ -1474,11 +1072,15 @@
         );
     }
 
-
     if (animationPosition) {
       animationPosition.textContent =
         player?.position ||
         "?";
+    }
+
+    if (revealPlayerButton) {
+      revealPlayerButton.disabled =
+        false;
     }
   }
 
@@ -1496,11 +1098,9 @@
     const student =
       result?.student || {};
 
-
     applyRarityTheme(
       player.rarity
     );
-
 
     if (revealedRarity) {
       revealedRarity.textContent =
@@ -1509,7 +1109,6 @@
         );
     }
 
-
     if (revealedRating) {
       revealedRating.textContent =
         safeNumber(
@@ -1517,13 +1116,11 @@
         );
     }
 
-
     if (revealedPosition) {
       revealedPosition.textContent =
         player.position ||
         "-";
     }
-
 
     if (revealedName) {
       revealedName.textContent =
@@ -1531,13 +1128,11 @@
         "Joueur";
     }
 
-
     if (revealedClub) {
       revealedClub.textContent =
         player.club ||
         "Club";
     }
-
 
     if (revealedNationality) {
       const nationality =
@@ -1550,7 +1145,6 @@
         )} ${nationality}`;
     }
 
-
     if (revealStudentName) {
       revealStudentName.textContent =
         student.name ||
@@ -1561,9 +1155,7 @@
     }
 
 
-    /* -----------------------------------------------------
-       PHOTO
-       ----------------------------------------------------- */
+    /* PHOTO */
 
     if (
       revealedImage &&
@@ -1579,12 +1171,10 @@
       revealedImage.hidden =
         false;
 
-
       if (revealedFallback) {
         revealedFallback.hidden =
           true;
       }
-
 
       revealedImage.onerror =
         () => {
@@ -1603,13 +1193,11 @@
           }
         };
 
-
     } else {
       if (revealedImage) {
         revealedImage.hidden =
           true;
       }
-
 
       if (revealedFallback) {
         revealedFallback.hidden =
@@ -1624,9 +1212,7 @@
     }
 
 
-    /* -----------------------------------------------------
-       COLLECTION
-       ----------------------------------------------------- */
+    /* COLLECTION */
 
     if (viewCollectionButton) {
       const route =
@@ -1640,9 +1226,7 @@
     }
 
 
-    /* -----------------------------------------------------
-       OPENINGS RESTANTS
-       ----------------------------------------------------- */
+    /* OPENINGS RESTANTS */
 
     const remaining =
       safeNumber(
@@ -1652,24 +1236,20 @@
           ?.available
       );
 
-
     if (openAnotherButton) {
       openAnotherButton.hidden =
         remaining < 1;
-
 
       if (remaining === 1) {
         openAnotherButton.textContent =
           "Ouvrir le suivant";
       }
 
-
       if (remaining > 1) {
         openAnotherButton.textContent =
           `Ouvrir le suivant · ${remaining} restants`;
       }
     }
-
 
     if (backTeacherButton) {
       backTeacherButton.hidden =
@@ -1689,12 +1269,10 @@
       openingContext = {};
     }
 
-
     if (result?.student) {
       openingContext.student =
         result.student;
     }
-
 
     if (result?.openings) {
       openingContext.openings =
@@ -1703,7 +1281,6 @@
       openingContext.stats =
         result.openings;
     }
-
 
     openingContext.availablePlayers =
       Math.max(
@@ -1717,7 +1294,9 @@
 
 
   /* =======================================================
-     OPENING PRINCIPAL
+     OPENING
+
+     AUCUNE ANIMATION.
      ======================================================= */
 
   async function performOpening() {
@@ -1730,13 +1309,8 @@
       return;
     }
 
-
-    isOpening =
-      true;
-
-    openingResult =
-      null;
-
+    isOpening = true;
+    openingResult = null;
 
     resetOpeningVisuals();
 
@@ -1748,90 +1322,58 @@
 
 
     /*
-     * IMPORTANT :
-     *
-     * Google ET le penalty démarrent
-     * au même moment.
+     * ===============================================
+     * AU CLIC :
+     * PREMIER ÉCRAN IMMÉDIATEMENT
+     * ===============================================
      */
 
+    showAnimationScreen();
 
-    let serverFinished =
-      false;
+    showStep(
+      stepIdentity
+    );
 
 
-    const serverPromise =
-      api.performOpening(
-        teacherToken,
-        studentId,
-        packType
-      )
-      .then(result => {
-        serverFinished =
-          true;
+    /*
+     * On laisse uniquement des ...
+     * le temps que Google réponde.
+     */
 
-        /*
-         * Photo préchargée immédiatement.
-         */
-        preloadPlayerImage(
-          result?.player
-        );
+    if (animationFlag) {
+      animationFlag.textContent =
+        "🌍";
+    }
 
-        return {
-          ok: true,
-          result
-        };
-      })
-      .catch(error => {
-        serverFinished =
-          true;
+    if (animationNationality) {
+      animationNationality.textContent =
+        "…";
+    }
 
-        return {
-          ok: false,
-          error
-        };
-      });
+    if (animationClub) {
+      animationClub.textContent =
+        "…";
+    }
 
+    if (nextIdentityButton) {
+      nextIdentityButton.disabled =
+        true;
+    }
+
+
+    /*
+     * ===============================================
+     * TIRAGE SERVEUR
+     * ===============================================
+     */
 
     try {
-      /*
-       * ---------------------------------------------
-       * LE PENALTY DURE TOUJOURS 2,5 SECONDES
-       * ---------------------------------------------
-       */
-
-      await playPenaltyAnimation();
-
-
-      /*
-       * ---------------------------------------------
-       * À 2,5 s :
-       *
-       * si Google est prêt → SWITCH IMMÉDIAT.
-       *
-       * sinon → on garde les feux d'artifice
-       * jusqu'à la réponse.
-       * ---------------------------------------------
-       */
-
-      if (!serverFinished) {
-        startCelebrationHold();
-      }
-
-
-      const serverOutcome =
-        await serverPromise;
-
-
-      stopCelebrationHold();
-
-
-      if (!serverOutcome.ok) {
-        throw serverOutcome.error;
-      }
-
-
       const result =
-        serverOutcome.result;
+        await api.performOpening(
+          teacherToken,
+          studentId,
+          packType
+        );
 
 
       openingResult =
@@ -1844,8 +1386,17 @@
 
 
       /*
-       * Toutes les informations sont prêtes
-       * avant de changer d'écran.
+       * Photo chargée en arrière-plan.
+       */
+
+      preloadPlayerImage(
+        result?.player
+      );
+
+
+      /*
+       * Dès que Google répond :
+       * on remplit le premier indice.
        */
 
       prepareIdentityScreen(
@@ -1853,29 +1404,25 @@
       );
 
 
+      /*
+       * On prépare déjà le deuxième
+       * indice en mémoire.
+       */
+
       prepareRatingScreen(
         result.player
       );
 
 
       /*
-       * ---------------------------------------------
-       * SWAP IMMÉDIAT
-       * ---------------------------------------------
-       *
-       * Aucun sleep ici.
+       * Mais le bouton révéler ne doit
+       * servir que quand l'écran 2 apparaît.
        */
 
-      showStep(
-        stepIdentity
-      );
-
-
-      /*
-       * Petit flash au moment du changement,
-       * mais sans ralentir le changement.
-       */
-      triggerFlash();
+      if (revealPlayerButton) {
+        revealPlayerButton.disabled =
+          false;
+      }
 
 
       isOpening =
@@ -1883,23 +1430,18 @@
 
 
     } catch (error) {
-      stopCelebrationHold();
-
       isOpening =
         false;
 
-
       console.error(
-        "Erreur pendant l'opening :",
+        "Erreur opening :",
         error
       );
-
 
       showError(
         error?.message ||
         "Impossible d'effectuer cet opening."
       );
-
 
     } finally {
       if (packButton) {
@@ -1912,7 +1454,6 @@
 
   /* =======================================================
      SUIVANT
-     NATIONALITÉ + CLUB → NOTE + POSTE
      ======================================================= */
 
   async function goToRatingStep() {
@@ -1924,36 +1465,24 @@
       return;
     }
 
-
     transitionLocked =
       true;
-
 
     if (nextIdentityButton) {
       nextIdentityButton.disabled =
         true;
     }
 
-
-    triggerFlash();
-
-
-    await sleep(160);
-
-
     showStep(
       stepRating
     );
 
-
-    await sleep(120);
-
+    await sleep(100);
 
     if (nextIdentityButton) {
       nextIdentityButton.disabled =
         false;
     }
-
 
     transitionLocked =
       false;
@@ -1962,7 +1491,6 @@
 
   /* =======================================================
      RÉVÉLER
-     NOTE + POSTE → CARTE
      ======================================================= */
 
   async function revealPlayer() {
@@ -1974,43 +1502,30 @@
       return;
     }
 
-
     transitionLocked =
       true;
-
 
     if (revealPlayerButton) {
       revealPlayerButton.disabled =
         true;
     }
 
-
-    /*
-     * Préparation pendant que la carte
-     * est encore invisible.
-     */
     renderFinalCard(
       openingResult
     );
 
-
     hideAllSteps();
 
-
     triggerFlash();
-
 
     await sleep(
       FINAL_FLASH_DURATION
     );
 
-
     showReveal();
-
 
     transitionLocked =
       false;
-
 
     if (revealPlayerButton) {
       revealPlayerButton.disabled =
@@ -2032,7 +1547,6 @@
       return;
     }
 
-
     const remaining =
       safeNumber(
         openingResult
@@ -2043,23 +1557,17 @@
           ?.available
       );
 
-
     if (remaining < 1) {
       return;
     }
 
-
-    openingResult =
-      null;
-
+    openingResult = null;
 
     resetOpeningVisuals();
-
 
     renderOpeningContext(
       openingContext
     );
-
 
     showReady();
   }
@@ -2074,18 +1582,15 @@
     performOpening
   );
 
-
   nextIdentityButton?.addEventListener(
     "click",
     goToRatingStep
   );
 
-
   revealPlayerButton?.addEventListener(
     "click",
     revealPlayer
   );
-
 
   openAnotherButton?.addEventListener(
     "click",
@@ -2094,7 +1599,7 @@
 
 
   /* =======================================================
-     PROTECTION SI LE TIRAGE SERVEUR EST EN COURS
+     PROTECTION PENDANT TIRAGE
      ======================================================= */
 
   window.addEventListener(
@@ -2106,8 +1611,7 @@
 
       event.preventDefault();
 
-      event.returnValue =
-        "";
+      event.returnValue = "";
     }
   );
 
@@ -2119,7 +1623,6 @@
   async function init() {
     readUrlParameters();
 
-
     if (!loadTeacherSession()) {
       showError(
         "Tu dois être connecté dans l'espace professeur."
@@ -2128,9 +1631,7 @@
       return;
     }
 
-
     resetOpeningVisuals();
-
 
     await loadOpeningContext();
   }
