@@ -1,15 +1,11 @@
 /* =========================================================
    BEL AIR FC — OPENING.JS
-   Opening rapide façon EA FC / FIFA
+   Opening rapide :
+   attente animée → pays/club → note/poste → joueur
    ========================================================= */
 
 (() => {
   "use strict";
-
-
-  /* =======================================================
-     CONFIG / API
-     ======================================================= */
 
   const config = window.FC_CONFIG;
   const api = window.FC_API;
@@ -18,53 +14,35 @@
     console.error(
       "Bel Air FC : config.js ou api.js n'est pas chargé."
     );
-
     return;
   }
 
 
   /* =======================================================
-     CONSTANTES
+     CONFIG
      ======================================================= */
 
   const SESSION_STORAGE_KEY =
     "fcClasse_teacherSession_v1";
 
-  /*
-   * Durées volontairement assez courtes.
-   *
-   * L'opening reste spectaculaire,
-   * mais ne fait pas perdre 20 secondes
-   * à chaque élève.
-   */
   const TIMINGS = {
-    minimumIntro: 650,
-
-    rarity: 650,
-
-    identity: 800,
-
-    rating: 850,
-
-    final: 500,
-
-    revealDelay: 180
+    minimumWait: 300,
+    identity: 1050,
+    rating: 1050,
+    finalFlash: 350,
+    reveal: 100
   };
 
 
   /* =======================================================
-     DOM — ÉTATS PRINCIPAUX
+     DOM
      ======================================================= */
 
   const loadingSection =
-    document.getElementById(
-      "opening-loading"
-    );
+    document.getElementById("opening-loading");
 
   const errorSection =
-    document.getElementById(
-      "opening-error"
-    );
+    document.getElementById("opening-error");
 
   const errorMessage =
     document.getElementById(
@@ -72,9 +50,7 @@
     );
 
   const readySection =
-    document.getElementById(
-      "opening-ready"
-    );
+    document.getElementById("opening-ready");
 
   const animationSection =
     document.getElementById(
@@ -87,19 +63,11 @@
     );
 
 
-  /* =======================================================
-     HEADER
-     ======================================================= */
-
   const headerStudentName =
     document.getElementById(
       "opening-student-name"
     );
 
-
-  /* =======================================================
-     READY / PACK
-     ======================================================= */
 
   const packButton =
     document.getElementById(
@@ -127,19 +95,13 @@
     );
 
 
-  /* =======================================================
-     FLASH
-     ======================================================= */
-
   const openingFlash =
     document.getElementById(
       "opening-flash"
     );
 
 
-  /* =======================================================
-     ÉTAPES ANIMATION
-     ======================================================= */
+  /* ÉTAPES */
 
   const stepIntro =
     document.getElementById(
@@ -167,18 +129,11 @@
     );
 
 
-  /* =======================================================
-     CONTENU ANIMATION
-     ======================================================= */
+  /* ANIMATION */
 
   const animationText =
     document.getElementById(
       "opening-animation-text"
-    );
-
-  const animationRarity =
-    document.getElementById(
-      "animation-rarity"
     );
 
   const animationNationality =
@@ -202,18 +157,11 @@
     );
 
 
-  /* =======================================================
-     RÉVÉLATION
-     ======================================================= */
+  /* CARTE FINALE */
 
   const revealedRarity =
     document.getElementById(
       "revealed-rarity"
-    );
-
-  const revealedPlayerCard =
-    document.getElementById(
-      "revealed-player-card"
     );
 
   const revealedRating =
@@ -257,9 +205,7 @@
     );
 
 
-  /* =======================================================
-     BOUTONS FIN
-     ======================================================= */
+  /* BOUTONS */
 
   const viewCollectionButton =
     document.getElementById(
@@ -278,11 +224,10 @@
 
 
   /* =======================================================
-     ÉTAT JS
+     ÉTAT
      ======================================================= */
 
   let teacherToken = null;
-
   let studentId = null;
 
   let packType =
@@ -290,12 +235,9 @@
     "standard";
 
   let openingContext = null;
-
   let openingResult = null;
 
   let isOpening = false;
-
-  let introInterval = null;
 
 
   /* =======================================================
@@ -304,10 +246,7 @@
 
   function sleep(ms) {
     return new Promise(resolve => {
-      window.setTimeout(
-        resolve,
-        ms
-      );
+      setTimeout(resolve, ms);
     });
   }
 
@@ -316,12 +255,20 @@
     value,
     fallback = 0
   ) {
-    const number =
-      Number(value);
+    const number = Number(value);
 
     return Number.isFinite(number)
       ? number
       : fallback;
+  }
+
+
+  function normalize(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
   }
 
 
@@ -338,18 +285,225 @@
   }
 
 
-  function prefersReducedMotion() {
-    return window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
+  /* =======================================================
+     DRAPEAUX
+     ======================================================= */
+
+  const COUNTRY_CODES = {
+    france: "FR",
+
+    argentine: "AR",
+    argentina: "AR",
+
+    bresil: "BR",
+    brazil: "BR",
+
+    espagne: "ES",
+    spain: "ES",
+
+    allemagne: "DE",
+    germany: "DE",
+
+    angleterre: "GB",
+    england: "GB",
+
+    royaumeuni: "GB",
+    "royaume-uni": "GB",
+
+    portugal: "PT",
+
+    italie: "IT",
+    italy: "IT",
+
+    belgique: "BE",
+    belgium: "BE",
+
+    paysbas: "NL",
+    "pays-bas": "NL",
+    netherlands: "NL",
+
+    croatie: "HR",
+    croatia: "HR",
+
+    norvege: "NO",
+    norway: "NO",
+
+    suede: "SE",
+    sweden: "SE",
+
+    danemark: "DK",
+    denmark: "DK",
+
+    suisse: "CH",
+    switzerland: "CH",
+
+    autriche: "AT",
+    austria: "AT",
+
+    pologne: "PL",
+    poland: "PL",
+
+    serbie: "RS",
+    serbia: "RS",
+
+    ukraine: "UA",
+
+    grece: "GR",
+    greece: "GR",
+
+    turquie: "TR",
+    turkey: "TR",
+
+    ecosse: "GB",
+    scotland: "GB",
+
+    galles: "GB",
+    wales: "GB",
+
+    irlande: "IE",
+    ireland: "IE",
+
+    maroc: "MA",
+    morocco: "MA",
+
+    algerie: "DZ",
+    algeria: "DZ",
+
+    tunisie: "TN",
+    tunisia: "TN",
+
+    egypte: "EG",
+    egypt: "EG",
+
+    senegal: "SN",
+
+    cameroun: "CM",
+    cameroon: "CM",
+
+    nigeria: "NG",
+
+    ghana: "GH",
+
+    coteivoire: "CI",
+    "cote d'ivoire": "CI",
+    "côte d'ivoire": "CI",
+
+    mali: "ML",
+
+    guinee: "GN",
+    guinea: "GN",
+
+    congo: "CG",
+
+    rdc: "CD",
+
+    afriquedusud: "ZA",
+    "afrique du sud": "ZA",
+
+    mexique: "MX",
+    mexico: "MX",
+
+    canada: "CA",
+
+    etatsunis: "US",
+    "etats-unis": "US",
+    usa: "US",
+
+    uruguay: "UY",
+
+    colombie: "CO",
+    colombia: "CO",
+
+    chili: "CL",
+    chile: "CL",
+
+    equateur: "EC",
+    ecuador: "EC",
+
+    paraguay: "PY",
+
+    perou: "PE",
+    peru: "PE",
+
+    japon: "JP",
+    japan: "JP",
+
+    coreedusud: "KR",
+    "coree du sud": "KR",
+
+    australie: "AU",
+    australia: "AU",
+
+    nouvellezelande: "NZ",
+    "nouvelle-zelande": "NZ",
+
+    georgie: "GE",
+    georgia: "GE",
+
+    hongrie: "HU",
+    hungary: "HU",
+
+    roumanie: "RO",
+    romania: "RO",
+
+    slovaquie: "SK",
+    slovakia: "SK",
+
+    slovenie: "SI",
+    slovenia: "SI",
+
+    republiquetcheque: "CZ",
+    tchequie: "CZ",
+
+    israel: "IL",
+
+    iran: "IR",
+
+    arabiesaoudite: "SA",
+    "arabie saoudite": "SA"
+  };
+
+
+  function countryCode(
+    nationality
+  ) {
+    const raw =
+      normalize(nationality);
+
+    const compact =
+      raw.replace(
+        /[^a-z]/g,
+        ""
+      );
+
+    return (
+      COUNTRY_CODES[raw] ||
+      COUNTRY_CODES[compact] ||
+      null
+    );
   }
 
 
-  function setDocumentTitle(
-    studentName
+  function flagEmoji(
+    nationality
   ) {
-    document.title =
-      `${studentName} — Opening — Bel Air FC`;
+    const code =
+      countryCode(nationality);
+
+    if (!code) {
+      return "🌍";
+    }
+
+    return code
+      .toUpperCase()
+      .replace(
+        /./g,
+        char =>
+          String.fromCodePoint(
+            127397 +
+            char.charCodeAt()
+          )
+      );
   }
 
 
@@ -405,40 +559,27 @@
       return true;
 
     } catch (error) {
-      console.warn(
-        "Session professeur illisible.",
-        error
-      );
-
       return false;
     }
   }
 
 
   /* =======================================================
-     ÉTATS D'ÉCRAN
+     ÉCRANS
      ======================================================= */
 
   function hideAllStates() {
-    if (loadingSection) {
-      loadingSection.hidden = true;
-    }
-
-    if (errorSection) {
-      errorSection.hidden = true;
-    }
-
-    if (readySection) {
-      readySection.hidden = true;
-    }
-
-    if (animationSection) {
-      animationSection.hidden = true;
-    }
-
-    if (revealSection) {
-      revealSection.hidden = true;
-    }
+    [
+      loadingSection,
+      errorSection,
+      readySection,
+      animationSection,
+      revealSection
+    ].forEach(element => {
+      if (element) {
+        element.hidden = true;
+      }
+    });
   }
 
 
@@ -446,7 +587,8 @@
     hideAllStates();
 
     if (loadingSection) {
-      loadingSection.hidden = false;
+      loadingSection.hidden =
+        false;
     }
   }
 
@@ -459,7 +601,8 @@
     );
 
     if (readySection) {
-      readySection.hidden = false;
+      readySection.hidden =
+        false;
     }
   }
 
@@ -472,7 +615,9 @@
     );
 
     if (animationSection) {
-      animationSection.hidden = false;
+      animationSection.hidden =
+        false;
+
       animationSection.classList.add(
         "is-running"
       );
@@ -494,28 +639,22 @@
     }
 
     if (revealSection) {
-      revealSection.hidden = false;
+      revealSection.hidden =
+        false;
     }
   }
 
 
   function showError(message) {
-    stopIntroMessages();
-
     hideAllStates();
 
     document.body.classList.remove(
       "is-opening"
     );
 
-    if (animationSection) {
-      animationSection.classList.remove(
-        "is-running"
-      );
-    }
-
     if (errorSection) {
-      errorSection.hidden = false;
+      errorSection.hidden =
+        false;
     }
 
     if (errorMessage) {
@@ -527,7 +666,7 @@
 
 
   /* =======================================================
-     GESTION DES ÉTAPES
+     ÉTAPES
      ======================================================= */
 
   function hideAllSteps() {
@@ -550,18 +689,36 @@
   function showStep(step) {
     hideAllSteps();
 
-    if (step) {
-      /*
-       * Petit reflow volontaire :
-       * permet à la transition CSS
-       * de repartir correctement.
-       */
-      void step.offsetWidth;
-
-      step.classList.add(
-        "is-active"
-      );
+    if (!step) {
+      return;
     }
+
+    void step.offsetWidth;
+
+    step.classList.add(
+      "is-active"
+    );
+  }
+
+
+  /* =======================================================
+     FLASH
+     ======================================================= */
+
+  function triggerFlash() {
+    if (!openingFlash) {
+      return;
+    }
+
+    openingFlash.classList.remove(
+      "is-active"
+    );
+
+    void openingFlash.offsetWidth;
+
+    openingFlash.classList.add(
+      "is-active"
+    );
   }
 
 
@@ -571,13 +728,10 @@
 
   function normalizeRarity(value) {
     const rarity =
-      String(value || "")
-        .toLowerCase()
-        .trim();
+      normalize(value);
 
     if (
       rarity === "legendary" ||
-      rarity === "légende" ||
       rarity === "legende"
     ) {
       return "legendary";
@@ -621,7 +775,9 @@
   }
 
 
-  function clearRarityTheme() {
+  function applyRarityTheme(
+    rarity
+  ) {
     document.body.classList.remove(
       "rarity-legendary",
       "rarity-gold",
@@ -629,92 +785,43 @@
       "rarity-bronze"
     );
 
-    if (animationSection) {
-      delete animationSection.dataset.rarity;
-    }
-  }
-
-
-  function applyRarityTheme(
-    rarityValue
-  ) {
-    clearRarityTheme();
-
-    const rarity =
-      normalizeRarity(
-        rarityValue
-      );
+    const normalized =
+      normalizeRarity(rarity);
 
     document.body.classList.add(
-      `rarity-${rarity}`
+      `rarity-${normalized}`
     );
 
-    if (animationSection) {
-      animationSection.dataset.rarity =
-        rarity;
-    }
-
-    return rarity;
+    return normalized;
   }
 
 
   /* =======================================================
-     FLASH
-     ======================================================= */
-
-  function triggerFlash() {
-    if (!openingFlash) {
-      return;
-    }
-
-    openingFlash.classList.remove(
-      "is-active"
-    );
-
-    void openingFlash.offsetWidth;
-
-    openingFlash.classList.add(
-      "is-active"
-    );
-
-    window.setTimeout(
-      () => {
-        openingFlash.classList.remove(
-          "is-active"
-        );
-      },
-      650
-    );
-  }
-
-
-  /* =======================================================
-     RESET
+     RESET VISUEL
      ======================================================= */
 
   function resetOpeningVisuals() {
-    clearRarityTheme();
-
     hideAllSteps();
 
-    if (animationText) {
-      animationText.textContent =
-        "Le pack s'ouvre…";
-    }
+    document.body.classList.remove(
+      "rarity-legendary",
+      "rarity-gold",
+      "rarity-silver",
+      "rarity-bronze"
+    );
 
-    if (animationRarity) {
-      animationRarity.textContent =
-        "?";
+    if (animationText) {
+      animationText.textContent = "";
     }
 
     if (animationNationality) {
       animationNationality.textContent =
-        "???";
+        "";
     }
 
     if (animationClub) {
       animationClub.textContent =
-        "???";
+        "";
     }
 
     if (animationRating) {
@@ -727,24 +834,23 @@
         "???";
     }
 
-    if (revealedRarity) {
-      revealedRarity.textContent =
-        "JOUEUR";
-    }
-
     if (revealedImage) {
-      revealedImage.hidden = true;
-      revealedImage.src = "";
+      revealedImage.hidden =
+        true;
+
+      revealedImage.src =
+        "";
     }
 
     if (revealedFallback) {
-      revealedFallback.hidden = true;
+      revealedFallback.hidden =
+        true;
     }
   }
 
 
   /* =======================================================
-     CONTEXTE OPENING
+     CONTEXTE
      ======================================================= */
 
   function renderOpeningContext(
@@ -758,16 +864,6 @@
       context?.stats ||
       {};
 
-    const available =
-      safeNumber(
-        openings.available
-      );
-
-    const remainingPlayers =
-      safeNumber(
-        context?.availablePlayers
-      );
-
     if (headerStudentName) {
       headerStudentName.textContent =
         student.name ||
@@ -776,31 +872,30 @@
 
     if (readyDescription) {
       readyDescription.textContent =
-        `${student.name || "L'élève"} va découvrir un nouveau joueur pour sa collection.`;
+        `${student.name || "L'élève"} va ouvrir son pack.`;
     }
 
     if (availableCount) {
       availableCount.textContent =
-        available;
+        safeNumber(
+          openings.available
+        );
     }
 
     if (playersLeft) {
       playersLeft.textContent =
-        remainingPlayers;
+        safeNumber(
+          context?.availablePlayers
+        );
     }
 
     if (packTypeLabel) {
       packTypeLabel.textContent =
-        packType === "standard"
-          ? "PACK STANDARD"
-          : String(packType)
-              .toUpperCase();
+        "PACK STANDARD";
     }
 
-    setDocumentTitle(
-      student.name ||
-      "Élève"
-    );
+    document.title =
+      `${student.name || "Élève"} — Opening — Bel Air FC`;
   }
 
 
@@ -809,26 +904,19 @@
       showError(
         "Connexion professeur requise."
       );
-
       return;
     }
 
     if (!studentId) {
       showError(
-        "Aucun élève n'a été sélectionné."
+        "Aucun élève sélectionné."
       );
-
       return;
     }
 
     showLoading();
 
     try {
-      /*
-       * Avec le nouveau api.js,
-       * cette fonction utilise normalement
-       * le dashboard déjà en cache.
-       */
       const context =
         await api.getOpeningContext(
           teacherToken,
@@ -839,32 +927,30 @@
       openingContext =
         context;
 
-      const available =
-        safeNumber(
-          context?.openings
-            ?.available ??
-          context?.stats
-            ?.available
-        );
+      const openings =
+        context?.openings ||
+        context?.stats ||
+        {};
 
-      const remainingPlayers =
+      if (
         safeNumber(
-          context?.availablePlayers
-        );
-
-      if (available < 1) {
+          openings.available
+        ) < 1
+      ) {
         showError(
           "Cet élève n'a aucun opening disponible."
         );
-
         return;
       }
 
-      if (remainingPlayers < 1) {
+      if (
+        safeNumber(
+          context?.availablePlayers
+        ) < 1
+      ) {
         showError(
-          "Il n'y a plus aucun joueur disponible."
+          "Il n'y a plus de joueur disponible."
         );
-
         return;
       }
 
@@ -875,11 +961,6 @@
       showReady();
 
     } catch (error) {
-      console.error(
-        "Erreur préparation opening :",
-        error
-      );
-
       showError(
         error?.message ||
         "Impossible de préparer l'opening."
@@ -889,172 +970,84 @@
 
 
   /* =======================================================
-     INTRO PENDANT QUE GOOGLE TRAVAILLE
+     IMAGE
      ======================================================= */
 
-  function startIntroMessages() {
-    stopIntroMessages();
+  function preloadImage(player) {
+    if (!player?.image) {
+      return;
+    }
 
-    const messages = [
-      "Le pack s'ouvre…",
-      "Entrée dans le stade…",
-      "Les lumières s'allument…",
-      "Un joueur arrive…"
-    ];
+    const image =
+      new Image();
 
-    let index = 0;
+    image.src =
+      player.image;
+  }
+
+
+  /* =======================================================
+     ÉTAPE 1
+     PETITE ANIMATION D'ATTENTE
+     ======================================================= */
+
+  function startWaitingAnimation() {
+    resetOpeningVisuals();
+
+    showAnimation();
+
+    /*
+     * On utilise uniquement l'animation
+     * visuelle du tunnel + ballon.
+     * Aucun texte.
+     */
 
     if (animationText) {
       animationText.textContent =
-        messages[0];
-    }
-
-    introInterval =
-      window.setInterval(
-        () => {
-          index =
-            (index + 1) %
-            messages.length;
-
-          if (animationText) {
-            animationText.textContent =
-              messages[index];
-          }
-        },
-        450
-      );
-  }
-
-
-  function stopIntroMessages() {
-    if (introInterval) {
-      window.clearInterval(
-        introInterval
-      );
-
-      introInterval =
-        null;
-    }
-  }
-
-
-  /* =======================================================
-     PRÉCHARGER IMAGE
-     ======================================================= */
-
-  function preloadPlayerImage(
-    player
-  ) {
-    if (!player?.image) {
-      return Promise.resolve();
-    }
-
-    return new Promise(resolve => {
-      const image =
-        new Image();
-
-      let finished =
-        false;
-
-      function finish() {
-        if (finished) {
-          return;
-        }
-
-        finished = true;
-
-        resolve();
-      }
-
-      image.onload =
-        finish;
-
-      image.onerror =
-        finish;
-
-      image.src =
-        player.image;
-
-      /*
-       * On ne bloque jamais l'opening
-       * plus de 1,5 seconde pour une image.
-       */
-      window.setTimeout(
-        finish,
-        1500
-      );
-    });
-  }
-
-
-  /* =======================================================
-     ÉTAPE RARETÉ
-     ======================================================= */
-
-  async function revealRarity(
-    player
-  ) {
-    const rarity =
-      applyRarityTheme(
-        player.rarity
-      );
-
-    if (animationRarity) {
-      animationRarity.textContent =
-        rarityLabel(
-          rarity
-        );
-    }
-
-    if (revealedRarity) {
-      revealedRarity.textContent =
-        rarityLabel(
-          rarity
-        );
+        "";
     }
 
     showStep(
-      stepRarity
+      stepIntro
     );
 
     triggerFlash();
-
-    if (
-      rarity === "legendary"
-    ) {
-      await sleep(
-        TIMINGS.rarity + 180
-      );
-    } else {
-      await sleep(
-        TIMINGS.rarity
-      );
-    }
   }
 
 
   /* =======================================================
-     CLUB + NATIONALITÉ
+     ÉTAPE 2
+     DRAPEAU + CLUB
      ======================================================= */
 
-  async function revealIdentity(
+  async function showIdentity(
     player
   ) {
+    const nationality =
+      player?.nationality ||
+      "Inconnue";
+
+    const flag =
+      flagEmoji(
+        nationality
+      );
+
     if (animationNationality) {
       animationNationality.textContent =
-        player.nationality ||
-        "INCONNUE";
+        `${flag} ${nationality}`;
     }
 
     if (animationClub) {
       animationClub.textContent =
-        player.club ||
-        "CLUB INCONNU";
+        player?.club ||
+        "Club inconnu";
     }
 
     showStep(
       stepIdentity
     );
+
+    triggerFlash();
 
     await sleep(
       TIMINGS.identity
@@ -1063,23 +1056,24 @@
 
 
   /* =======================================================
+     ÉTAPE 3
      NOTE + POSTE
      ======================================================= */
 
-  async function revealRating(
+  async function showRatingAndRole(
     player
   ) {
     if (animationRating) {
       animationRating.textContent =
         safeNumber(
-          player.rating,
+          player?.rating,
           "?"
         );
     }
 
     if (animationPosition) {
       animationPosition.textContent =
-        player.position ||
+        player?.position ||
         "?";
     }
 
@@ -1096,27 +1090,10 @@
 
 
   /* =======================================================
-     FINAL
+     CARTE FINALE
      ======================================================= */
 
-  async function revealFinalStage() {
-    showStep(
-      stepFinal
-    );
-
-    triggerFlash();
-
-    await sleep(
-      TIMINGS.final
-    );
-  }
-
-
-  /* =======================================================
-     RENDU JOUEUR
-     ======================================================= */
-
-  function renderRevealedPlayer(
+  function renderFinalCard(
     result
   ) {
     const player =
@@ -1125,25 +1102,26 @@
     const student =
       result?.student || {};
 
-    const rarity =
-      applyRarityTheme(
-        player.rarity
-      );
+    applyRarityTheme(
+      player.rarity
+    );
+
 
     if (revealedRarity) {
       revealedRarity.textContent =
         rarityLabel(
-          rarity
+          player.rarity
         );
     }
+
 
     if (revealedRating) {
       revealedRating.textContent =
         safeNumber(
-          player.rating,
-          0
+          player.rating
         );
     }
+
 
     if (revealedPosition) {
       revealedPosition.textContent =
@@ -1151,23 +1129,32 @@
         "-";
     }
 
+
     if (revealedName) {
       revealedName.textContent =
         player.name ||
         "Joueur";
     }
 
+
     if (revealedClub) {
       revealedClub.textContent =
         player.club ||
-        "Club non renseigné";
+        "Club";
     }
 
+
     if (revealedNationality) {
-      revealedNationality.textContent =
+      const nationality =
         player.nationality ||
-        "Nationalité non renseignée";
+        "Nationalité";
+
+      revealedNationality.textContent =
+        `${flagEmoji(
+          nationality
+        )} ${nationality}`;
     }
+
 
     if (revealStudentName) {
       revealStudentName.textContent =
@@ -1179,57 +1166,55 @@
     }
 
 
-    /* IMAGE */
+    /* PHOTO */
 
-    if (revealedImage) {
-      if (player.image) {
-        revealedImage.src =
-          player.image;
+    if (
+      revealedImage &&
+      player.image
+    ) {
+      revealedImage.src =
+        player.image;
 
-        revealedImage.alt =
-          player.name ||
-          "Joueur";
+      revealedImage.alt =
+        player.name ||
+        "Joueur";
 
-        revealedImage.hidden =
-          false;
+      revealedImage.hidden =
+        false;
 
-        if (revealedFallback) {
-          revealedFallback.hidden =
-            true;
-        }
-
-        revealedImage.onerror =
-          () => {
-            revealedImage.hidden =
-              true;
-
-            if (revealedFallback) {
-              revealedFallback.hidden =
-                false;
-
-              revealedFallback.textContent =
-                getInitials(
-                  player.name
-                ) ||
-                "BA";
-            }
-          };
-
-      } else {
-        revealedImage.hidden =
+      if (revealedFallback) {
+        revealedFallback.hidden =
           true;
-
-        if (revealedFallback) {
-          revealedFallback.hidden =
-            false;
-
-          revealedFallback.textContent =
-            getInitials(
-              player.name
-            ) ||
-            "BA";
-        }
       }
+
+      revealedImage.onerror =
+        () => {
+          revealedImage.hidden =
+            true;
+
+          if (revealedFallback) {
+            revealedFallback.hidden =
+              false;
+
+            revealedFallback.textContent =
+              getInitials(
+                player.name
+              ) ||
+              "BA";
+          }
+        };
+
+    } else if (
+      revealedFallback
+    ) {
+      revealedFallback.hidden =
+        false;
+
+      revealedFallback.textContent =
+        getInitials(
+          player.name
+        ) ||
+        "BA";
     }
 
 
@@ -1247,7 +1232,7 @@
     }
 
 
-    /* OPENINGS RESTANTS */
+    /* OPENING SUIVANT */
 
     const remaining =
       safeNumber(
@@ -1261,15 +1246,17 @@
       openAnotherButton.hidden =
         remaining < 1;
 
-      if (remaining > 1) {
-        openAnotherButton.textContent =
-          `Ouvrir le suivant · ${remaining} restants`;
-
-      } else if (remaining === 1) {
+      if (remaining === 1) {
         openAnotherButton.textContent =
           "Ouvrir le suivant";
       }
+
+      if (remaining > 1) {
+        openAnotherButton.textContent =
+          `Ouvrir le suivant · ${remaining} restants`;
+      }
     }
+
 
     if (backTeacherButton) {
       backTeacherButton.hidden =
@@ -1279,10 +1266,10 @@
 
 
   /* =======================================================
-     CONTEXTE LOCAL APRÈS TIRAGE
+     MAJ LOCALE
      ======================================================= */
 
-  function updateContextAfterOpening(
+  function updateLocalContext(
     result
   ) {
     if (!openingContext) {
@@ -1302,13 +1289,6 @@
         result.openings;
     }
 
-    /*
-     * Chaque opening attribue exactement
-     * un joueur.
-     *
-     * Donc pas besoin de redemander
-     * à Google combien il en reste.
-     */
     openingContext.availablePlayers =
       Math.max(
         0,
@@ -1321,7 +1301,7 @@
 
 
   /* =======================================================
-     OPENING PRINCIPAL
+     OPENING
      ======================================================= */
 
   async function performOpening() {
@@ -1339,48 +1319,26 @@
     openingResult =
       null;
 
-    resetOpeningVisuals();
-
-
-    /* -------------------------------------------------------
-       BOUTON
-       ------------------------------------------------------- */
 
     if (packButton) {
       packButton.disabled =
         true;
-
-      packButton.classList.add(
-        "is-opening"
-      );
     }
 
 
     /*
-     * =====================================================
-     * MOMENT IMPORTANT
-     * =====================================================
-     *
-     * On affiche le tunnel AVANT d'attendre Google.
-     *
-     * Donc le clic semble instantané.
+     * ===============================================
+     * CLIC = ANIMATION IMMÉDIATE
+     * ===============================================
      */
 
-    showAnimation();
-
-    showStep(
-      stepIntro
-    );
-
-    startIntroMessages();
-
-    triggerFlash();
+    startWaitingAnimation();
 
 
     /*
-     * L'appel Google démarre immédiatement
-     * en parallèle de l'animation.
+     * Google commence le tirage au même moment.
      */
+
     const serverPromise =
       api.performOpening(
         teacherToken,
@@ -1390,19 +1348,14 @@
 
 
     /*
-     * Minimum 650 ms de tunnel.
-     *
-     * Si Google répond en 300 ms :
-     * on garde quand même une petite intro.
-     *
-     * Si Google répond en 1,5 s :
-     * le tunnel continue pendant ce temps.
+     * Petit minimum de 300 ms pour éviter
+     * un changement brutal si Google répond
+     * immédiatement.
      */
-    const introMinimumPromise =
+
+    const minimumPromise =
       sleep(
-        prefersReducedMotion()
-          ? 100
-          : TIMINGS.minimumIntro
+        TIMINGS.minimumWait
       );
 
 
@@ -1412,125 +1365,86 @@
       ] =
         await Promise.all([
           serverPromise,
-          introMinimumPromise
+          minimumPromise
         ]);
-
-
-      stopIntroMessages();
 
 
       openingResult =
         result;
 
 
-      updateContextAfterOpening(
+      updateLocalContext(
         result
       );
 
 
       /*
-       * On commence immédiatement à charger
-       * la photo pendant que les indices
-       * sont révélés.
-       */
-      const imagePromise =
-        preloadPlayerImage(
-          result.player
-        );
-
-
-      /*
-       * ===================================================
-       * MODE ACCESSIBILITÉ
-       * ===================================================
+       * Dès qu'on connaît le joueur,
+       * sa photo commence à charger.
        */
 
-      if (
-        prefersReducedMotion()
-      ) {
-        renderRevealedPlayer(
-          result
-        );
-
-        await imagePromise;
-
-        showReveal();
-
-        return;
-      }
-
-
-      /*
-       * ===================================================
-       * RARETÉ
-       * ===================================================
-       */
-
-      await revealRarity(
+      preloadImage(
         result.player
       );
 
 
       /*
-       * ===================================================
-       * NATIONALITÉ + CLUB
-       * ===================================================
+       * ===========================================
+       * DRAPEAU + CLUB
+       * ===========================================
        */
 
-      await revealIdentity(
+      await showIdentity(
         result.player
       );
 
 
       /*
-       * ===================================================
+       * ===========================================
        * NOTE + POSTE
-       * ===================================================
+       * ===========================================
        */
 
-      await revealRating(
+      await showRatingAndRole(
         result.player
       );
 
 
       /*
-       * ===================================================
-       * FINAL
-       * ===================================================
+       * ===========================================
+       * FLASH FINAL
+       * ===========================================
        */
 
-      await revealFinalStage();
+      hideAllSteps();
+
+      triggerFlash();
+
+      await sleep(
+        TIMINGS.finalFlash
+      );
 
 
       /*
-       * La photo a eu environ 2 secondes
-       * pour se charger pendant l'animation.
-       */
-      await imagePromise;
-
-
-      /*
-       * ===================================================
-       * JOUEUR
-       * ===================================================
+       * ===========================================
+       * CARTE DU JOUEUR
+       * ===========================================
        */
 
-      renderRevealedPlayer(
+      renderFinalCard(
         result
       );
 
       await sleep(
-        TIMINGS.revealDelay
+        TIMINGS.reveal
       );
 
       showReveal();
 
 
     } catch (error) {
-      stopIntroMessages();
-
       console.error(
-        "Erreur pendant l'opening :",
+        "Erreur opening :",
         error
       );
 
@@ -1547,17 +1461,13 @@
       if (packButton) {
         packButton.disabled =
           false;
-
-        packButton.classList.remove(
-          "is-opening"
-        );
       }
     }
   }
 
 
   /* =======================================================
-     PACK SUIVANT
+     OPENING SUIVANT
      ======================================================= */
 
   function prepareAnotherOpening() {
@@ -1582,13 +1492,6 @@
       return;
     }
 
-
-    /*
-     * Pas de requête Google ici.
-     *
-     * On possède déjà les nouvelles
-     * informations localement.
-     */
 
     openingResult =
       null;
@@ -1620,37 +1523,17 @@
 
 
   /* =======================================================
-     PROTECTION SI ON QUITTE PENDANT LE TIRAGE
-     ======================================================= */
-
-  window.addEventListener(
-    "beforeunload",
-    event => {
-      if (!isOpening) {
-        return;
-      }
-
-      event.preventDefault();
-
-      event.returnValue =
-        "";
-    }
-  );
-
-
-  /* =======================================================
      INIT
      ======================================================= */
 
   async function init() {
     readUrlParameters();
 
-    const hasSession =
-      loadTeacherSession();
-
-    if (!hasSession) {
+    if (
+      !loadTeacherSession()
+    ) {
       showError(
-        "Tu dois être connecté dans l'espace professeur pour lancer un opening."
+        "Tu dois être connecté dans l'espace professeur."
       );
 
       return;
