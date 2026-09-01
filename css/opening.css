@@ -1,6 +1,16 @@
 /* =========================================================
    BEL AIR FC — OPENING.CSS
-   Ballon → But → Indices → Carte
+
+   OPENING :
+   PACK
+   → PENALTY 2,5 s
+   → BARRE
+   → REBOND LIGNE
+   → BUT
+   → FEUX D'ARTIFICE
+   → NATIONALITÉ + CLUB
+   → NOTE + POSTE
+   → CARTE FINALE
    ========================================================= */
 
 
@@ -15,23 +25,26 @@ body {
 
 body.opening-page {
   margin: 0;
+
   min-height: 100vh;
+
   overflow-x: hidden;
+
+  color: #ffffff;
 
   background:
     radial-gradient(
-      circle at 50% 20%,
-      #123b63 0%,
-      #071727 38%,
-      #02070d 100%
+      circle at 50% 15%,
+      #174f7f 0%,
+      #092137 32%,
+      #04101d 62%,
+      #010509 100%
     );
-
-  color: #ffffff;
 }
 
 
 /* =========================================================
-   FLASH
+   FLASH GLOBAL
    ========================================================= */
 
 .opening-flash {
@@ -42,25 +55,30 @@ body.opening-page {
 
   pointer-events: none;
 
-  background: #ffffff;
-
   opacity: 0;
+
+  background: #ffffff;
 }
 
 .opening-flash.is-active {
   animation:
     openingFlash
-    0.55s
+    0.42s
     ease-out;
 }
 
 @keyframes openingFlash {
+
   0% {
     opacity: 0;
   }
 
-  15% {
-    opacity: 0.95;
+  12% {
+    opacity: 0.96;
+  }
+
+  35% {
+    opacity: 0.4;
   }
 
   100% {
@@ -70,18 +88,18 @@ body.opening-page {
 
 
 /* =========================================================
-   FOND
+   FOND GÉNÉRAL
    ========================================================= */
 
 .opening-background {
   position: fixed;
   inset: 0;
 
+  z-index: 0;
+
   overflow: hidden;
 
   pointer-events: none;
-
-  z-index: 0;
 }
 
 .opening-bg-glow {
@@ -91,7 +109,7 @@ body.opening-page {
   height: 1100px;
 
   left: 50%;
-  top: 40%;
+  top: 35%;
 
   transform:
     translate(-50%, -50%);
@@ -101,19 +119,19 @@ body.opening-page {
   background:
     radial-gradient(
       circle,
-      rgba(58, 171, 255, 0.2),
-      rgba(18, 94, 156, 0.08) 35%,
+      rgba(59, 172, 255, 0.18),
+      rgba(39, 113, 180, 0.07) 38%,
       transparent 70%
     );
 
-  filter: blur(20px);
+  filter: blur(30px);
 }
 
 .opening-bg-lines {
   position: absolute;
   inset: 0;
 
-  opacity: 0.12;
+  opacity: 0.1;
 
   background-image:
     linear-gradient(
@@ -127,7 +145,7 @@ body.opening-page {
     );
 
   background-size:
-    80px 80px;
+    85px 85px;
 
   transform:
     perspective(700px)
@@ -140,21 +158,23 @@ body.opening-page {
 
 .opening-bg-particles {
   position: absolute;
-  inset: -20%;
+  inset: -15%;
+
+  opacity: 0.6;
 
   background:
     radial-gradient(
-      circle at 20% 25%,
-      rgba(255,255,255,0.6) 0 1px,
+      circle at 20% 20%,
+      rgba(255,255,255,0.65) 0 1px,
       transparent 2px
     ),
     radial-gradient(
-      circle at 80% 40%,
-      rgba(255,255,255,0.35) 0 1px,
+      circle at 75% 35%,
+      rgba(255,255,255,0.45) 0 1px,
       transparent 2px
     ),
     radial-gradient(
-      circle at 45% 75%,
+      circle at 45% 80%,
       rgba(255,255,255,0.35) 0 1px,
       transparent 2px
     );
@@ -165,13 +185,14 @@ body.opening-page {
     260px 260px;
 
   animation:
-    backgroundParticles
-    20s
+    openingBackgroundMove
+    18s
     linear
     infinite;
 }
 
-@keyframes backgroundParticles {
+@keyframes openingBackgroundMove {
+
   from {
     transform:
       translateY(0);
@@ -179,7 +200,7 @@ body.opening-page {
 
   to {
     transform:
-      translateY(-160px);
+      translateY(-150px);
   }
 }
 
@@ -209,7 +230,7 @@ body.opening-page {
     22px;
 
   background:
-    rgba(2, 10, 18, 0.82);
+    rgba(2, 10, 18, 0.84);
 
   backdrop-filter:
     blur(16px);
@@ -228,9 +249,9 @@ body.opening-page {
 
   gap: 10px;
 
-  text-decoration: none;
-
   color: #ffffff;
+
+  text-decoration: none;
 }
 
 .opening-brand-badge {
@@ -252,13 +273,13 @@ body.opening-page {
   background:
     linear-gradient(
       135deg,
-      #32c474,
-      #147ed4
+      #38cf7b,
+      #1688df
     );
 
   box-shadow:
-    0 0 25px
-    rgba(34, 159, 226, 0.22);
+    0 0 26px
+    rgba(40, 160, 230, 0.22);
 }
 
 .opening-brand-text {
@@ -280,7 +301,7 @@ body.opening-page {
 
   font-weight: 900;
 
-  letter-spacing: 2.5px;
+  letter-spacing: 2.4px;
 
   opacity: 0.42;
 }
@@ -307,24 +328,25 @@ body.opening-page {
 
   border-radius: 50%;
 
-  text-decoration: none;
-
   color: #ffffff;
+
+  text-decoration: none;
 
   background:
     rgba(255,255,255,0.06);
 
   border:
     1px solid
-    rgba(255,255,255,0.08);
+    rgba(255,255,255,0.09);
 
   transition:
-    0.15s ease;
+    transform 0.15s ease,
+    background 0.15s ease;
 }
 
 .opening-close:hover {
   transform:
-    scale(1.06);
+    scale(1.07);
 
   background:
     rgba(255,255,255,0.12);
@@ -350,9 +372,9 @@ body.opening-page {
   justify-content: center;
 
   padding:
-    28px
+    26px
     18px
-    46px;
+    44px;
 }
 
 .opening-state {
@@ -375,35 +397,36 @@ body.opening-page {
 }
 
 .opening-loader-ball {
-  font-size: 55px;
+  font-size: 54px;
 
   animation:
-    loadingBall
-    0.9s
+    openingLoaderBall
+    0.85s
     ease-in-out
     infinite;
 }
 
-@keyframes loadingBall {
+@keyframes openingLoaderBall {
+
   0%,
   100% {
     transform:
       translateY(0)
-      rotate(0deg);
+      rotate(0);
   }
 
   50% {
     transform:
-      translateY(-12px)
-      rotate(18deg);
+      translateY(-13px)
+      rotate(25deg);
   }
 }
 
 .opening-loading h1 {
   margin:
-    18px
+    17px
     0
-    5px;
+    6px;
 
   font-size:
     clamp(
@@ -444,18 +467,18 @@ body.opening-page {
 
   border-radius: 50%;
 
+  color: #ff8a8a;
+
   font-size: 28px;
 
   font-weight: 1000;
 
-  color: #ff8282;
-
   background:
-    rgba(255,80,80,0.14);
+    rgba(255, 65, 65, 0.13);
 
   border:
     1px solid
-    rgba(255,80,80,0.3);
+    rgba(255, 80, 80, 0.3);
 }
 
 .opening-error h1 {
@@ -479,19 +502,20 @@ body.opening-page {
 
 
 /* =========================================================
-   PACK READY
+   READY
    ========================================================= */
 
 .opening-ready {
   text-align: center;
 
   animation:
-    readyAppear
-    0.45s
+    openingReadyAppear
+    0.4s
     ease-out;
 }
 
-@keyframes readyAppear {
+@keyframes openingReadyAppear {
+
   from {
     opacity: 0;
 
@@ -508,7 +532,7 @@ body.opening-page {
 }
 
 .opening-ready-top {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .opening-pack-type {
@@ -520,13 +544,6 @@ body.opening-page {
 
   border-radius: 999px;
 
-  border:
-    1px solid
-    rgba(255,255,255,0.1);
-
-  background:
-    rgba(255,255,255,0.05);
-
   font-size: 10px;
 
   font-weight: 900;
@@ -534,6 +551,13 @@ body.opening-page {
   letter-spacing: 2px;
 
   opacity: 0.65;
+
+  background:
+    rgba(255,255,255,0.05);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.1);
 }
 
 .opening-ready h1 {
@@ -570,7 +594,7 @@ body.opening-page {
   position: relative;
 
   margin:
-    24px
+    22px
     auto
     18px;
 
@@ -593,11 +617,15 @@ body.opening-page {
   cursor: pointer;
 }
 
+.opening-pack-button:disabled {
+  cursor: default;
+}
+
 .opening-pack-light {
   position: absolute;
 
-  width: 400px;
-  height: 400px;
+  width: 390px;
+  height: 390px;
 
   left: 50%;
   top: 45%;
@@ -610,26 +638,27 @@ body.opening-page {
   background:
     radial-gradient(
       circle,
-      rgba(255,209,74,0.3),
-      rgba(255,172,0,0.07) 45%,
+      rgba(255, 210, 67, 0.3),
+      rgba(255, 174, 0, 0.07) 45%,
       transparent 70%
     );
 
   animation:
-    packLightPulse
+    packGlow
     2s
     ease-in-out
     infinite;
 }
 
-@keyframes packLightPulse {
+@keyframes packGlow {
+
   0%,
   100% {
     opacity: 0.65;
 
     transform:
       translate(-50%, -50%)
-      scale(0.92);
+      scale(0.93);
   }
 
   50% {
@@ -637,7 +666,7 @@ body.opening-page {
 
     transform:
       translate(-50%, -50%)
-      scale(1.08);
+      scale(1.07);
   }
 }
 
@@ -667,24 +696,24 @@ body.opening-page {
 
   border:
     2px solid
-    rgba(255,255,255,0.25);
+    rgba(255,255,255,0.26);
+
+  color: #173b72;
 
   background:
     linear-gradient(
       145deg,
-      #fff6a5 0%,
-      #e7b62c 28%,
-      #a96b05 65%,
-      #ffe881 100%
+      #fff8b3 0%,
+      #e9b92d 30%,
+      #aa6d08 65%,
+      #ffe982 100%
     );
-
-  color: #173d7b;
 
   box-shadow:
     0 30px 90px
     rgba(0,0,0,0.65),
     0 0 60px
-    rgba(255,185,20,0.22);
+    rgba(255,185,20,0.2);
 
   animation:
     packFloat
@@ -716,6 +745,7 @@ body.opening-page {
 }
 
 @keyframes packShine {
+
   from {
     transform:
       translateX(-35%);
@@ -728,6 +758,7 @@ body.opening-page {
 }
 
 @keyframes packFloat {
+
   0%,
   100% {
     transform:
@@ -807,13 +838,14 @@ body.opening-page {
   opacity: 0.7;
 
   animation:
-    clickPulse
+    packClickPulse
     1.4s
     ease-in-out
     infinite;
 }
 
-@keyframes clickPulse {
+@keyframes packClickPulse {
+
   0%,
   100% {
     opacity: 0.45;
@@ -833,7 +865,7 @@ body.opening-page {
   max-width: 520px;
 
   margin:
-    26px auto 0;
+    25px auto 0;
 
   display: grid;
 
@@ -878,7 +910,7 @@ body.opening-page {
 
 
 /* =========================================================
-   ZONE ANIMATION
+   ZONE OPENING
    ========================================================= */
 
 .opening-animation {
@@ -892,15 +924,15 @@ body.opening-page {
 
   height:
     min(
-      72vh,
-      650px
+      76vh,
+      680px
     );
 
-  min-height: 540px;
+  min-height: 570px;
 
   overflow: hidden;
 
-  border-radius: 25px;
+  border-radius: 26px;
 
   border:
     1px solid
@@ -908,15 +940,16 @@ body.opening-page {
 
   background:
     radial-gradient(
-      ellipse at center,
-      #183a59 0%,
-      #091827 42%,
-      #02070c 80%
+      ellipse at 50% 15%,
+      #245d8c 0%,
+      #0b2c49 30%,
+      #061625 62%,
+      #02070c 100%
     );
 
   box-shadow:
     0 35px 110px
-    rgba(0,0,0,0.7);
+    rgba(0,0,0,0.72);
 }
 
 
@@ -929,42 +962,42 @@ body.opening-page {
 
   top: -10%;
 
-  width: 180px;
+  width: 190px;
   height: 120%;
 
-  opacity: 0.35;
+  opacity: 0.3;
 
-  filter: blur(22px);
+  filter: blur(24px);
 
   pointer-events: none;
 }
 
 .tunnel-light-left {
-  left: 7%;
+  left: 6%;
 
   transform:
-    rotate(-13deg);
+    rotate(-14deg);
 
   background:
     linear-gradient(
       to right,
       transparent,
-      rgba(77,176,255,0.8),
+      rgba(77,176,255,0.82),
       transparent
     );
 }
 
 .tunnel-light-right {
-  right: 7%;
+  right: 6%;
 
   transform:
-    rotate(13deg);
+    rotate(14deg);
 
   background:
     linear-gradient(
       to left,
       transparent,
-      rgba(77,176,255,0.8),
+      rgba(77,176,255,0.82),
       transparent
     );
 }
@@ -990,41 +1023,42 @@ body.is-opening
 }
 
 @keyframes tunnelLightLeft {
+
   from {
     transform:
       translateX(-15px)
-      rotate(-13deg);
+      rotate(-14deg);
   }
 
   to {
     transform:
-      translateX(22px)
+      translateX(25px)
       rotate(-6deg);
   }
 }
 
 @keyframes tunnelLightRight {
+
   from {
     transform:
       translateX(15px)
-      rotate(13deg);
+      rotate(14deg);
   }
 
   to {
     transform:
-      translateX(-22px)
+      translateX(-25px)
       rotate(6deg);
   }
 }
 
 
 /* =========================================================
-   CONTENU DES ÉTAPES
+   ÉTAPES
    ========================================================= */
 
 .opening-stage-content {
   position: absolute;
-
   inset: 0;
 
   z-index: 10;
@@ -1053,13 +1087,13 @@ body.is-opening
   pointer-events: none;
 
   transform:
-    translateY(20px)
+    translateY(18px)
     scale(0.97);
 
   transition:
-    opacity 0.3s ease,
-    transform 0.3s ease,
-    visibility 0.3s;
+    opacity 0.28s ease,
+    transform 0.28s ease,
+    visibility 0.28s;
 }
 
 .opening-step.is-active {
@@ -1093,7 +1127,7 @@ body.is-opening
 
 
 /* =========================================================
-   SCÈNE DU BUT
+   ÉTAPE PENALTY
    ========================================================= */
 
 .opening-step-goal {
@@ -1106,83 +1140,271 @@ body.is-opening
 
 .opening-goal-scene {
   position: absolute;
-
   inset: 0;
 
   overflow: hidden;
 
-  perspective: 900px;
+  perspective: 1000px;
 
   background:
-    radial-gradient(
-      ellipse at 50% 35%,
-      rgba(37,105,157,0.35),
-      transparent 45%
+    linear-gradient(
+      to bottom,
+      rgba(13, 45, 72, 0.15) 0%,
+      rgba(3, 18, 29, 0.05) 35%,
+      rgba(0,0,0,0.2) 100%
     );
 }
 
 
 /* =========================================================
-   STADE
+   TRIBUNES / AMBIANCE
+   ========================================================= */
+
+.opening-goal-scene::before,
+.opening-goal-scene::after {
+  content: "";
+
+  position: absolute;
+
+  z-index: 1;
+
+  pointer-events: none;
+}
+
+.opening-goal-scene::before {
+  left: 0;
+  right: 0;
+  top: 0;
+
+  height: 29%;
+
+  opacity: 0.55;
+
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,0.09) 0 2px,
+      transparent 2px 8px
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(9, 31, 49, 0.15),
+      rgba(0,0,0,0.58)
+    );
+
+  mask-image:
+    linear-gradient(
+      to bottom,
+      #000,
+      transparent
+    );
+}
+
+
+/* =========================================================
+   FEUX D'ARTIFICE
+   ========================================================= */
+
+/*
+   Le futur JS ajoutera :
+   .is-celebrating
+   sur #opening-goal-scene
+*/
+
+.opening-goal-scene.is-celebrating::before {
+  opacity: 1;
+
+  background:
+    radial-gradient(
+      circle at 15% 25%,
+      rgba(255,255,255,1) 0 2px,
+      transparent 3px
+    ),
+    radial-gradient(
+      circle at 15% 25%,
+      transparent 0 20px,
+      rgba(255,229,94,0.9) 21px 23px,
+      transparent 24px
+    ),
+    radial-gradient(
+      circle at 82% 22%,
+      rgba(255,255,255,1) 0 2px,
+      transparent 3px
+    ),
+    radial-gradient(
+      circle at 82% 22%,
+      transparent 0 25px,
+      rgba(104,207,255,0.9) 26px 28px,
+      transparent 29px
+    ),
+    radial-gradient(
+      circle at 34% 13%,
+      transparent 0 18px,
+      rgba(255,130,220,0.9) 19px 21px,
+      transparent 22px
+    ),
+    radial-gradient(
+      circle at 67% 15%,
+      transparent 0 22px,
+      rgba(112,255,154,0.9) 23px 25px,
+      transparent 26px
+    );
+
+  animation:
+    fireworksA
+    0.8s
+    ease-out
+    forwards;
+}
+
+.opening-goal-scene.is-celebrating::after {
+  inset: 0;
+
+  z-index: 8;
+
+  opacity: 0;
+
+  background:
+    radial-gradient(
+      circle at 24% 31%,
+      rgba(255,218,81,0.95) 0 2px,
+      transparent 3px
+    ),
+    radial-gradient(
+      circle at 76% 28%,
+      rgba(91,196,255,0.95) 0 2px,
+      transparent 3px
+    ),
+    radial-gradient(
+      circle at 48% 18%,
+      rgba(255,112,189,0.9) 0 2px,
+      transparent 3px
+    );
+
+  background-size:
+    20px 20px,
+    24px 24px,
+    28px 28px;
+
+  animation:
+    fireworksParticles
+    0.9s
+    ease-out
+    forwards;
+}
+
+@keyframes fireworksA {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      scale(0.2);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      scale(1.5);
+  }
+}
+
+@keyframes fireworksParticles {
+
+  0% {
+    opacity: 0;
+
+    transform:
+      scale(0.4)
+      translateY(0);
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      scale(1.3)
+      translateY(70px);
+  }
+}
+
+
+/* =========================================================
+   PROJECTEURS STADE
    ========================================================= */
 
 .goal-stadium-light {
   position: absolute;
 
-  width: 280px;
-  height: 500px;
+  z-index: 2;
 
-  top: -80px;
+  width: 300px;
+  height: 470px;
 
-  opacity: 0.25;
+  top: -100px;
 
-  filter: blur(25px);
+  opacity: 0.28;
+
+  filter: blur(26px);
 }
 
 .goal-stadium-light-left {
-  left: 3%;
+  left: 2%;
 
   transform:
     rotate(-25deg);
 
   background:
     linear-gradient(
-      rgba(255,255,255,0.7),
-      transparent 75%
+      rgba(255,255,255,0.82),
+      transparent 72%
     );
 }
 
 .goal-stadium-light-right {
-  right: 3%;
+  right: 2%;
 
   transform:
     rotate(25deg);
 
   background:
     linear-gradient(
-      rgba(255,255,255,0.7),
-      transparent 75%
+      rgba(255,255,255,0.82),
+      transparent 72%
     );
 }
 
 
 /* =========================================================
-   PELOUSE
+   TERRAIN
    ========================================================= */
 
 .goal-pitch {
   position: absolute;
 
-  left: -15%;
-  right: -15%;
+  z-index: 2;
 
-  bottom: -12%;
+  left: -12%;
+  right: -12%;
 
-  height: 62%;
+  bottom: -9%;
+
+  height: 84%;
+
+  overflow: hidden;
 
   transform:
-    perspective(700px)
-    rotateX(62deg);
+    perspective(900px)
+    rotateX(58deg);
 
   transform-origin:
     bottom center;
@@ -1190,16 +1412,47 @@ body.is-opening
   background:
     repeating-linear-gradient(
       90deg,
-      #0b633a 0,
-      #0b633a 90px,
-      #0d7041 90px,
-      #0d7041 180px
+      #08603a 0,
+      #08603a 105px,
+      #0a7042 105px,
+      #0a7042 210px
     );
 
   border-top:
     2px solid
-    rgba(255,255,255,0.45);
+    rgba(255,255,255,0.38);
+
+  box-shadow:
+    inset 0 20px 80px
+    rgba(0,0,0,0.17);
 }
+
+
+/* =========================================================
+   SURFACE DE RÉPARATION
+   ========================================================= */
+
+.goal-pitch-line {
+  position: absolute;
+
+  left: 50%;
+  top: -3%;
+
+  width: 58%;
+  height: 54%;
+
+  transform:
+    translateX(-50%);
+
+  border:
+    4px solid
+    rgba(255,255,255,0.75);
+
+  border-top: 0;
+}
+
+
+/* PETITE SURFACE */
 
 .goal-pitch::before {
   content: "";
@@ -1207,34 +1460,75 @@ body.is-opening
   position: absolute;
 
   left: 50%;
+  top: -2%;
 
-  top: 0;
-
-  width: 2px;
-
-  height: 100%;
-
-  background:
-    rgba(255,255,255,0.35);
-}
-
-.goal-pitch-line {
-  position: absolute;
-
-  left: 50%;
-  top: 8%;
-
-  width: 330px;
-  height: 180px;
+  width: 30%;
+  height: 22%;
 
   transform:
     translateX(-50%);
 
   border:
-    3px solid
-    rgba(255,255,255,0.4);
+    4px solid
+    rgba(255,255,255,0.72);
 
   border-top: 0;
+}
+
+
+/* POINT DE PENALTY */
+
+.goal-pitch::after {
+  content: "";
+
+  position: absolute;
+
+  z-index: 3;
+
+  left: 50%;
+  top: 43%;
+
+  width: 11px;
+  height: 11px;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background:
+    rgba(255,255,255,0.95);
+
+  box-shadow:
+    0 0 10px
+    rgba(255,255,255,0.3);
+}
+
+
+/* ARC DE CERCLE */
+
+.goal-pitch-line::before {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  bottom: -23%;
+
+  width: 135px;
+  height: 75px;
+
+  transform:
+    translateX(-50%);
+
+  border:
+    4px solid
+    rgba(255,255,255,0.65);
+
+  border-top: 0;
+
+  border-radius:
+    0 0 90px 90px;
 }
 
 
@@ -1245,56 +1539,58 @@ body.is-opening
 .opening-goal {
   position: absolute;
 
-  z-index: 3;
+  z-index: 7;
 
   width:
     clamp(
-      230px,
-      38vw,
-      420px
+      280px,
+      46vw,
+      500px
     );
 
   height:
     clamp(
-      130px,
-      21vw,
-      225px
+      150px,
+      25vw,
+      260px
     );
 
   left: 50%;
-
-  top: 25%;
+  top: 13%;
 
   transform:
     translateX(-50%);
 
   filter:
     drop-shadow(
-      0 10px 25px
-      rgba(0,0,0,0.55)
+      0 16px 24px
+      rgba(0,0,0,0.6)
     );
 }
 
 .goal-post {
   position: absolute;
 
-  top: 0;
+  z-index: 7;
 
+  top: 0;
   bottom: 0;
 
-  width: 9px;
+  width: 10px;
 
-  border-radius: 6px;
+  border-radius: 7px;
 
   background:
     linear-gradient(
       90deg,
-      #c9ced3,
-      #ffffff,
-      #aeb5bc
+      #b8bec4,
+      #ffffff 45%,
+      #b1b8bf
     );
 
-  z-index: 5;
+  box-shadow:
+    0 0 8px
+    rgba(255,255,255,0.2);
 }
 
 .goal-post-left {
@@ -1308,22 +1604,25 @@ body.is-opening
 .goal-crossbar {
   position: absolute;
 
-  top: 0;
+  z-index: 8;
 
+  top: 0;
   left: 0;
   right: 0;
 
-  height: 9px;
+  height: 10px;
 
-  border-radius: 6px;
-
-  z-index: 6;
+  border-radius: 7px;
 
   background:
     linear-gradient(
       #ffffff,
-      #c3c9cf
+      #bec5cb
     );
+
+  box-shadow:
+    0 0 8px
+    rgba(255,255,255,0.18);
 }
 
 
@@ -1334,70 +1633,86 @@ body.is-opening
 .goal-net {
   position: absolute;
 
+  z-index: 4;
+
   inset:
-    7px
-    7px
+    8px
+    8px
     0;
+
+  opacity: 0.64;
 
   transform-origin:
     center top;
 
-  opacity: 0.65;
-
   background-image:
     linear-gradient(
-      rgba(255,255,255,0.25) 1px,
+      rgba(255,255,255,0.28) 1px,
       transparent 1px
     ),
     linear-gradient(
       90deg,
-      rgba(255,255,255,0.25) 1px,
+      rgba(255,255,255,0.28) 1px,
       transparent 1px
     );
 
   background-size:
-    18px 18px;
+    19px 19px;
 
   border:
     1px solid
     rgba(255,255,255,0.15);
+
+  transform:
+    perspective(300px)
+    rotateX(-4deg);
 }
 
 .goal-net.is-hit {
   animation:
-    netHit
-    0.6s
+    goalNetHit
+    0.62s
     ease-out;
 }
 
-@keyframes netHit {
+@keyframes goalNetHit {
+
   0% {
     transform:
-      scaleX(1)
-      scaleY(1);
+      perspective(300px)
+      rotateX(-4deg)
+      scale(1);
   }
 
-  20% {
+  22% {
     transform:
-      scaleX(1.07)
-      scaleY(1.18)
-      translateY(5px);
+      perspective(300px)
+      rotateX(-12deg)
+      scaleX(1.06)
+      scaleY(1.16)
+      translateY(7px);
   }
 
   45% {
     transform:
+      perspective(300px)
+      rotateX(0deg)
       scaleX(0.97)
       scaleY(0.94);
   }
 
   70% {
     transform:
+      perspective(300px)
+      rotateX(-7deg)
       scaleX(1.03)
-      scaleY(1.05);
+      scaleY(1.06);
   }
 
   100% {
     transform:
+      perspective(300px)
+      rotateX(-4deg)
       scale(1);
   }
 }
@@ -1407,105 +1722,317 @@ body.is-opening
    BALLON
    ========================================================= */
 
+/*
+   POSITION DE DÉPART :
+   juste au-dessus du point de penalty.
+*/
+
 .opening-ball {
   position: absolute;
 
   z-index: 20;
 
   left: 50%;
-
-  bottom: 8%;
-
-  transform:
-    translateX(-50%)
-    scale(1);
+  bottom: 23%;
 
   font-size:
     clamp(
-      70px,
-      12vw,
-      110px
+      62px,
+      9vw,
+      92px
     );
 
   line-height: 1;
 
+  user-select: none;
+
+  transform:
+    translate(-50%, -55px)
+    scale(0.9);
+
   filter:
     drop-shadow(
-      0 15px 15px
+      0 13px 12px
       rgba(0,0,0,0.6)
     );
 
-  user-select: none;
+  will-change:
+    left,
+    bottom,
+    transform;
 }
+
+
+/* =========================================================
+   PENALTY ZIDANE — 2,5 SECONDES
+   ========================================================= */
 
 .opening-ball.is-shooting {
   animation:
-    ballShoot
-    1.15s
-    cubic-bezier(.2,.75,.25,1)
+    zidanePenalty
+    2.5s
+    cubic-bezier(.2,.72,.23,1)
     forwards;
 }
 
-@keyframes ballShoot {
+
+/*
+   DÉROULÉ :
+
+   0 → 14 %
+   le ballon tombe sur le point de penalty
+
+   14 → 20 %
+   petite compression / préparation
+
+   20 → 54 %
+   tir piqué vers la barre
+
+   58 %
+   BARRE
+
+   58 → 73 %
+   rebond vers la ligne
+
+   76 %
+   rebond au sol / ligne
+
+   76 → 100 %
+   ballon remonte légèrement et finit dans le filet
+*/
+
+@keyframes zidanePenalty {
+
+  /* BALLON LÂCHÉ */
+
   0% {
     left: 50%;
-
-    bottom: 8%;
+    bottom: 23%;
 
     transform:
-      translateX(-50%)
-      scale(1)
+      translate(-50%, -72px)
+      scale(0.9)
       rotate(0deg);
   }
 
+
+  8% {
+    left: 50%;
+    bottom: 23%;
+
+    transform:
+      translate(-50%, -28px)
+      scale(0.94)
+      rotate(35deg);
+  }
+
+
+  14% {
+    left: 50%;
+    bottom: 23%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.98)
+      rotate(65deg);
+  }
+
+
+  /* PETIT ÉCRASEMENT */
+
   18% {
-    left: 47%;
-
-    bottom: 18%;
-
-    transform:
-      translateX(-50%)
-      scale(0.88)
-      rotate(100deg);
-  }
-
-  42% {
-    left: 53%;
-
-    bottom: 34%;
+    left: 50%;
+    bottom: 23%;
 
     transform:
-      translateX(-50%)
-      scale(0.65)
-      rotate(260deg);
+      translate(-50%, 2px)
+      scaleX(1.05)
+      scaleY(0.92)
+      rotate(75deg);
   }
 
-  72% {
+
+  /* DÉPART DU TIR */
+
+  22% {
+    left: 50%;
+    bottom: 25%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.92)
+      rotate(115deg);
+  }
+
+
+  32% {
     left: 49%;
+    bottom: 38%;
 
+    transform:
+      translate(-50%, 0)
+      scale(0.76)
+      rotate(250deg);
+  }
+
+
+  43% {
+    left: 50.5%;
+    bottom: 52%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.58)
+      rotate(430deg);
+  }
+
+
+  52% {
+    left: 50%;
+    bottom: 62%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.43)
+      rotate(610deg);
+  }
+
+
+  /* CONTACT BARRE */
+
+  58% {
+    left: 50%;
+    bottom: 67%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.36)
+      rotate(720deg);
+  }
+
+
+  /* REBOND VERS LE BAS */
+
+  64% {
+    left: 50.3%;
+    bottom: 58%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.34)
+      rotate(790deg);
+  }
+
+
+  71% {
+    left: 49.8%;
     bottom: 49%;
 
     transform:
-      translateX(-50%)
-      scale(0.4)
-      rotate(460deg);
+      translate(-50%, 0)
+      scale(0.32)
+      rotate(860deg);
   }
+
+
+  /* REBOND SUR / PRÈS DE LA LIGNE */
+
+  76% {
+    left: 50%;
+    bottom: 45%;
+
+    transform:
+      translate(-50%, 0)
+      scaleX(0.34)
+      scaleY(0.28)
+      rotate(910deg);
+  }
+
+
+  /* LE BALLON RENTRE */
+
+  82% {
+    left: 50%;
+    bottom: 48%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.3)
+      rotate(980deg);
+  }
+
+
+  90% {
+    left: 50%;
+    bottom: 52%;
+
+    transform:
+      translate(-50%, 0)
+      scale(0.27)
+      rotate(1080deg);
+  }
+
 
   100% {
     left: 50%;
-
-    bottom: 57%;
+    bottom: 54%;
 
     transform:
-      translateX(-50%)
-      scale(0.22)
-      rotate(720deg);
+      translate(-50%, 0)
+      scale(0.24)
+      rotate(1200deg);
   }
 }
 
 
 /* =========================================================
-   IMPACT
+   EFFET CONTACT BARRE
+   ========================================================= */
+
+/*
+   Le prochain JS pourra ajouter cette classe
+   au moment exact du contact.
+*/
+
+.opening-goal.is-crossbar-hit
+.goal-crossbar {
+  animation:
+    crossbarHit
+    0.28s
+    ease-out;
+}
+
+@keyframes crossbarHit {
+
+  0% {
+    transform:
+      translateY(0);
+  }
+
+  25% {
+    transform:
+      translateY(-4px);
+  }
+
+  50% {
+    transform:
+      translateY(3px);
+  }
+
+  75% {
+    transform:
+      translateY(-2px);
+  }
+
+  100% {
+    transform:
+      translateY(0);
+  }
+}
+
+
+/* =========================================================
+   IMPACT DU BUT
    ========================================================= */
 
 .opening-goal-impact {
@@ -1514,7 +2041,7 @@ body.is-opening
   z-index: 18;
 
   left: 50%;
-  top: 34%;
+  top: 36%;
 
   width: 20px;
   height: 20px;
@@ -1531,32 +2058,33 @@ body.is-opening
   box-shadow:
     0 0 30px
     #ffffff,
-    0 0 80px
-    rgba(93,190,255,0.9);
+    0 0 90px
+    rgba(92, 194, 255, 0.95);
 }
 
 .opening-goal-impact.is-active {
   animation:
     goalImpact
-    0.6s
+    0.55s
     ease-out;
 }
 
 @keyframes goalImpact {
+
   0% {
     opacity: 1;
 
     transform:
       translate(-50%, -50%)
-      scale(0.3);
+      scale(0.25);
   }
 
-  30% {
+  35% {
     opacity: 1;
 
     transform:
       translate(-50%, -50%)
-      scale(3.5);
+      scale(3.8);
   }
 
   100% {
@@ -1570,7 +2098,7 @@ body.is-opening
 
 
 /* =========================================================
-   TEXTE BUT
+   BUT !
    ========================================================= */
 
 .opening-goal-text {
@@ -1579,41 +2107,42 @@ body.is-opening
   z-index: 30;
 
   left: 50%;
-  top: 58%;
+  top: 57%;
 
   transform:
     translate(-50%, -50%);
 
+  color: #ffffff;
+
   font-size:
     clamp(
-      55px,
-      12vw,
-      120px
+      50px,
+      10vw,
+      100px
     );
 
   font-weight: 1000;
 
   font-style: italic;
 
-  letter-spacing: -4px;
-
-  color: #ffffff;
+  letter-spacing: -3px;
 
   text-shadow:
-    0 0 25px
-    rgba(255,255,255,0.6),
-    0 8px 30px
-    rgba(0,0,0,0.6);
+    0 0 20px
+    rgba(255,255,255,0.55),
+    0 8px 28px
+    rgba(0,0,0,0.7);
 }
 
 .opening-goal-text:not([hidden]) {
   animation:
     goalTextAppear
-    0.7s
+    0.48s
     cubic-bezier(.15,.9,.25,1);
 }
 
 @keyframes goalTextAppear {
+
   0% {
     opacity: 0;
 
@@ -1627,7 +2156,7 @@ body.is-opening
 
     transform:
       translate(-50%, -50%)
-      scale(1.16);
+      scale(1.14);
   }
 
   100% {
@@ -1639,7 +2168,7 @@ body.is-opening
 
 
 /* =========================================================
-   IDENTITÉ : NATIONALITÉ + CLUB
+   NATIONALITÉ + CLUB
    ========================================================= */
 
 .opening-step-identity {
@@ -1666,8 +2195,7 @@ body.is-opening
 .opening-identity-item {
   min-height: 220px;
 
-  padding:
-    24px;
+  padding: 24px;
 
   display: flex;
 
@@ -1894,7 +2422,7 @@ body.is-opening
 
 
 /* =========================================================
-   BOUTON SUIVANT
+   BOUTONS SUIVANT / RÉVÉLER
    ========================================================= */
 
 .opening-next-button {
@@ -1923,14 +2451,14 @@ body.is-opening
     1px solid
     rgba(86,215,138,0.48);
 
+  color: #052816;
+
   background:
     linear-gradient(
       135deg,
       #78e78d,
       #2fc870
     );
-
-  color: #052816;
 
   font-family: inherit;
 
@@ -1962,12 +2490,21 @@ body.is-opening
 
 .opening-next-button:active {
   transform:
-    translateY(0)
     scale(0.98);
+}
+
+.opening-next-button:disabled {
+  opacity: 0.55;
+
+  cursor: default;
+
+  transform: none;
 }
 
 .opening-reveal-button {
   min-width: 240px;
+
+  color: #302000;
 
   background:
     linear-gradient(
@@ -1979,8 +2516,6 @@ body.is-opening
   border-color:
     rgba(255,217,78,0.55);
 
-  color: #302000;
-
   box-shadow:
     0 12px 35px
     rgba(230,181,35,0.23);
@@ -1988,7 +2523,7 @@ body.is-opening
 
 
 /* =========================================================
-   RÉVÉLATION FINALE
+   RÉVÉLATION
    ========================================================= */
 
 .opening-reveal {
@@ -1997,12 +2532,13 @@ body.is-opening
   text-align: center;
 
   animation:
-    revealCardAppear
+    finalRevealAppear
     0.55s
     cubic-bezier(.15,.85,.2,1);
 }
 
-@keyframes revealCardAppear {
+@keyframes finalRevealAppear {
+
   from {
     opacity: 0;
 
@@ -2057,13 +2593,14 @@ body.is-opening
     190px 190px;
 
   animation:
-    revealParticlesSpin
+    finalParticles
     10s
     linear
     infinite;
 }
 
-@keyframes revealParticlesSpin {
+@keyframes finalParticles {
+
   from {
     transform:
       translate(-50%, -50%)
@@ -2085,7 +2622,7 @@ body.is-opening
 
 
 /* =========================================================
-   RARETÉ FINALE
+   RARETÉ
    ========================================================= */
 
 .revealed-rarity {
@@ -2098,7 +2635,8 @@ body.is-opening
   margin-bottom: 14px;
 
   padding:
-    6px 15px;
+    6px
+    15px;
 
   border-radius: 999px;
 
@@ -2108,17 +2646,17 @@ body.is-opening
 
   letter-spacing: 2.5px;
 
+  background:
+    rgba(255,255,255,0.07);
+
   border:
     1px solid
     rgba(255,255,255,0.12);
-
-  background:
-    rgba(255,255,255,0.07);
 }
 
 
 /* =========================================================
-   CARTE FINALE
+   CARTE
    ========================================================= */
 
 .revealed-player-card {
@@ -2144,6 +2682,8 @@ body.is-opening
     2px solid
     rgba(255,255,255,0.22);
 
+  color: #201600;
+
   background:
     linear-gradient(
       145deg,
@@ -2151,8 +2691,6 @@ body.is-opening
       #e4b026 38%,
       #a56c08 100%
     );
-
-  color: #201600;
 
   box-shadow:
     0 40px 120px
@@ -2182,7 +2720,7 @@ body.is-opening
 
 
 /* =========================================================
-   NOTE FINALE
+   NOTE CARTE
    ========================================================= */
 
 .revealed-card-rating {
@@ -2220,7 +2758,7 @@ body.is-opening
 
 
 /* =========================================================
-   PHOTO
+   IMAGE JOUEUR
    ========================================================= */
 
 .revealed-image-zone {
@@ -2312,7 +2850,7 @@ body.is-opening
 
 
 /* =========================================================
-   INFOS CARTE
+   INFOS JOUEUR
    ========================================================= */
 
 .revealed-player-info {
@@ -2325,12 +2863,12 @@ body.is-opening
     22px
     24px;
 
+  background:
+    rgba(255,255,255,0.13);
+
   border-top:
     1px solid
     rgba(80,50,0,0.13);
-
-  background:
-    rgba(255,255,255,0.13);
 }
 
 .revealed-player-name {
@@ -2376,7 +2914,7 @@ body.is-opening
 
 
 /* =========================================================
-   THÈMES RARETÉ
+   RARETÉS
    ========================================================= */
 
 body.rarity-gold
@@ -2394,16 +2932,18 @@ body.rarity-gold
 .revealed-rarity {
   color: #ffd96b;
 
-  border-color:
-    rgba(255,217,100,0.32);
-
   background:
     rgba(255,204,60,0.1);
+
+  border-color:
+    rgba(255,217,100,0.32);
 }
 
 
 body.rarity-silver
 .revealed-player-card {
+  color: #15202a;
+
   background:
     linear-gradient(
       145deg,
@@ -2411,8 +2951,6 @@ body.rarity-silver
       #bcc6cf 40%,
       #67737e 100%
     );
-
-  color: #15202a;
 }
 
 body.rarity-silver
@@ -2423,6 +2961,8 @@ body.rarity-silver
 
 body.rarity-bronze
 .revealed-player-card {
+  color: #29160c;
+
   background:
     linear-gradient(
       145deg,
@@ -2430,8 +2970,6 @@ body.rarity-bronze
       #b46b38 44%,
       #663519 100%
     );
-
-  color: #29160c;
 }
 
 
@@ -2611,40 +3149,62 @@ body.rarity-legendary
 
   .opening-main {
     padding:
-      16px
-      8px
-      30px;
+      14px
+      7px
+      28px;
   }
 
   .opening-ready-stats {
     grid-template-columns: 1fr;
   }
 
-  .opening-tunnel {
-    height: 72vh;
 
-    min-height: 520px;
+  /* SCÈNE */
+
+  .opening-tunnel {
+    height: 75vh;
+
+    min-height: 540px;
 
     border-radius: 16px;
   }
 
   .opening-stage-content {
-    padding: 15px;
+    padding: 14px;
   }
 
 
-  /* BUT */
+  /* CAGE */
 
   .opening-goal {
-    top: 26%;
+    top: 15%;
 
-    width: 260px;
+    width: 300px;
 
-    height: 145px;
+    height: 165px;
   }
 
+
+  /* TERRAIN */
+
+  .goal-pitch {
+    left: -32%;
+    right: -32%;
+
+    height: 83%;
+  }
+
+  .goal-pitch-line {
+    width: 62%;
+  }
+
+
+  /* BALLON */
+
   .opening-ball {
-    font-size: 72px;
+    bottom: 23%;
+
+    font-size: 68px;
   }
 
 
@@ -2661,27 +3221,27 @@ body.rarity-legendary
   }
 
   .opening-identity-item {
-    min-height: 150px;
+    min-height: 145px;
 
-    padding: 15px;
+    padding: 14px;
   }
 
   .opening-animation-flag {
-    font-size: 55px;
+    font-size: 52px;
   }
 
   .opening-club-placeholder {
-    width: 56px;
-    height: 56px;
+    width: 54px;
+    height: 54px;
 
-    font-size: 28px;
+    font-size: 27px;
   }
 
 
-  /* NOTE */
+  /* NOTE / POSTE */
 
   .opening-rating-zone {
-    gap: 10px;
+    gap: 9px;
   }
 
   .opening-rating-block,
@@ -2703,6 +3263,9 @@ body.rarity-legendary
   .revealed-image-zone {
     height: 360px;
   }
+
+
+  /* ACTIONS */
 
   .opening-reveal-actions {
     max-width: 390px;
@@ -2727,17 +3290,21 @@ body.rarity-legendary
 @media (max-width: 420px) {
 
   .opening-tunnel {
-    min-height: 500px;
+    min-height: 515px;
   }
 
   .opening-goal {
-    width: 220px;
+    width: 245px;
 
-    height: 125px;
+    height: 140px;
   }
 
   .opening-ball {
-    font-size: 65px;
+    font-size: 60px;
+  }
+
+  .goal-pitch-line {
+    width: 70%;
   }
 
   .opening-animation-rating {
@@ -2761,13 +3328,15 @@ body.rarity-legendary
 
 
 /* =========================================================
-   ACCESSIBILITÉ
+   MOUVEMENTS RÉDUITS
+
+   On garde le penalty :
+   c'est une étape fonctionnelle de l'opening.
+
+   On retire uniquement les animations décoratives infinies.
    ========================================================= */
 
-@media (
-  prefers-reduced-motion:
-  reduce
-) {
+@media (prefers-reduced-motion: reduce) {
 
   .opening-bg-particles,
   .opening-pack,
