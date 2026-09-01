@@ -1,33 +1,24 @@
-/* =========================================================
-   FC CLASSE — CONFIG.JS
-   Réglages globaux du front
-   ========================================================= */
-
 window.FC_CONFIG = {
-  appName: "FC Classe",
+  appName: "Bel Air FC",
 
-  // Tant que Google Apps Script n'est pas branché,
-  // le site utilise les données de démonstration.
-  useMockData: true,
+  // false = utilise le vrai Google Sheet / Apps Script
+  useMockData: false,
 
-  // À remplacer plus tard par l'URL du Web App Google Apps Script.
-  apiBaseUrl: "",
+  // URL de l'API Apps Script
+  apiBaseUrl:
+    "https://script.google.com/macros/s/AKfycbxarKaK0F3i9dpV5yjPdfK-C0Lc_cT9ItSU0DG_KlffCI_xrYjfk3ad8f50hwt2pSHV/exec",
 
-  // Nombre de joueurs affichés directement sur le terrain élève.
+  // Nombre de joueurs affichés sur le terrain
   pitchPlayerLimit: 5,
 
-  // Délai avant lancement d'une recherche,
-  // pour éviter une requête à chaque touche.
+  // Recherche élève
   searchDebounceMs: 180,
-
-  // Nombre minimum de caractères avant de lancer
-  // une recherche d'élève.
   minimumSearchLength: 2,
 
-  // Type de pack utilisé dans la V1.
-  // On prévoit déjà d'autres types plus tard.
+  // Pack utilisé pour la V1
   defaultPackType: "standard",
 
+  // Pages du site
   routes: {
     home: "index.html",
     student: "eleve.html",
