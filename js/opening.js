@@ -1,17 +1,18 @@
 /* =========================================================
-   FC CLASSE — OPENING.JS
-   Logique de l'ouverture d'un pack
+   BEL AIR FC — OPENING.JS
+   Opening rapide / local-first
    ========================================================= */
 
 (() => {
+  "use strict";
+
   const config = window.FC_CONFIG;
   const api = window.FC_API;
 
   if (!config || !api) {
     console.error(
-      "FC Classe : config.js ou api.js n'est pas chargé."
+      "Bel Air FC : config.js ou api.js n'est pas chargé."
     );
-
     return;
   }
 
@@ -25,18 +26,14 @@
 
 
   /* =======================================================
-     ÉLÉMENTS DOM
+     DOM
      ======================================================= */
 
   const loadingSection =
-    document.getElementById(
-      "opening-loading"
-    );
+    document.getElementById("opening-loading");
 
   const errorSection =
-    document.getElementById(
-      "opening-error"
-    );
+    document.getElementById("opening-error");
 
   const errorMessage =
     document.getElementById(
@@ -44,9 +41,7 @@
     );
 
   const readySection =
-    document.getElementById(
-      "opening-ready"
-    );
+    document.getElementById("opening-ready");
 
   const animationSection =
     document.getElementById(
@@ -59,19 +54,11 @@
     );
 
 
-  /* =======================================================
-     HEADER
-     ======================================================= */
-
   const headerStudentName =
     document.getElementById(
       "opening-student-name"
     );
 
-
-  /* =======================================================
-     PACK
-     ======================================================= */
 
   const packButton =
     document.getElementById(
@@ -99,10 +86,6 @@
     );
 
 
-  /* =======================================================
-     ANIMATION
-     ======================================================= */
-
   const openingFlash =
     document.getElementById(
       "opening-flash"
@@ -128,10 +111,6 @@
       "opening-animation-text"
     );
 
-
-  /* =======================================================
-     RÉVÉLATION
-     ======================================================= */
 
   const revealedRating =
     document.getElementById(
@@ -255,9 +234,19 @@
   }
 
 
-  function setDocumentTitle(studentName) {
+  function setDocumentTitle(
+    studentName
+  ) {
     document.title =
-      `${studentName} — Opening — FC Classe`;
+      `${studentName} — Opening — Bel Air FC`;
+  }
+
+
+  function setAnimationText(text) {
+    if (animationText) {
+      animationText.textContent =
+        text;
+    }
   }
 
 
@@ -272,21 +261,17 @@
       );
 
     studentId =
-      params.get(
-        "studentId"
-      );
+      params.get("studentId");
 
     packType =
-      params.get(
-        "pack"
-      ) ||
+      params.get("pack") ||
       config.defaultPackType ||
       "standard";
   }
 
 
   /* =======================================================
-     SESSION PROFESSEUR
+     SESSION PROF
      ======================================================= */
 
   function loadTeacherSession() {
@@ -324,7 +309,7 @@
 
 
   /* =======================================================
-     AFFICHAGE DES ÉTATS
+     ÉTATS VISUELS
      ======================================================= */
 
   function hideAllStates() {
@@ -415,6 +400,12 @@
       "is-opening"
     );
 
+    if (animationSection) {
+      animationSection.classList.remove(
+        "is-running"
+      );
+    }
+
     if (errorSection) {
       errorSection.hidden = false;
     }
@@ -428,18 +419,22 @@
 
 
   /* =======================================================
-     CONTEXTE DE L'OPENING
+     CONTEXTE
      ======================================================= */
 
-  function renderOpeningContext(context) {
+  function renderOpeningContext(
+    context
+  ) {
     const student =
-      context.student || {};
+      context?.student || {};
 
     const openings =
-      context.openings || {};
+      context?.openings ||
+      context?.stats ||
+      {};
 
     const pack =
-      context.pack || {};
+      context?.pack || {};
 
     const available =
       safeNumber(
@@ -448,7 +443,7 @@
 
     const remainingPlayers =
       safeNumber(
-        context.availablePlayers
+        context?.availablePlayers
       );
 
     if (headerStudentName) {
@@ -458,17 +453,29 @@
     }
 
     if (packTypeLabel) {
+      let packName =
+        pack.name ||
+        pack.id ||
+        context?.packType ||
+        packType;
+
+      if (
+        String(packName)
+          .toLowerCase() ===
+        "standard"
+      ) {
+        packName =
+          "Pack Standard";
+      }
+
       packTypeLabel.textContent =
-        String(
-          pack.name ||
-          pack.id ||
-          packType
-        ).toUpperCase();
+        String(packName)
+          .toUpperCase();
     }
 
     if (readyDescription) {
       readyDescription.textContent =
-        `${student.name} va découvrir un nouveau joueur unique pour sa collection.`;
+        `${student.name || "L'élève"} va découvrir un nouveau joueur pour sa collection.`;
     }
 
     if (availableCount) {
@@ -493,7 +500,6 @@
       showError(
         "Connexion professeur requise."
       );
-
       return;
     }
 
@@ -501,13 +507,17 @@
       showError(
         "Aucun élève n'a été sélectionné."
       );
-
       return;
     }
 
     showLoading();
 
     try {
+      /*
+       * Grâce au nouveau api.js,
+       * cette réponse vient généralement
+       * directement du cache local.
+       */
       const context =
         await api.getOpeningContext(
           teacherToken,
@@ -520,19 +530,21 @@
 
       const available =
         safeNumber(
-          context.openings?.available
+          context?.openings
+            ?.available ??
+          context?.stats
+            ?.available
         );
 
       const availablePlayers =
         safeNumber(
-          context.availablePlayers
+          context?.availablePlayers
         );
 
       if (available < 1) {
         showError(
           "Cet élève n'a aucun opening disponible."
         );
-
         return;
       }
 
@@ -540,7 +552,6 @@
         showError(
           "Il n'y a plus aucun joueur disponible dans la classe."
         );
-
         return;
       }
 
@@ -577,11 +588,6 @@
       "is-active"
     );
 
-    /*
-     * Force le navigateur à recommencer
-     * l'animation si plusieurs packs sont ouverts.
-     */
-
     void openingFlash.offsetWidth;
 
     openingFlash.classList.add(
@@ -594,13 +600,13 @@
           "is-active"
         );
       },
-      850
+      650
     );
   }
 
 
   /* =======================================================
-     PRÉPARATION ANIMATION
+     RESET ANIMATION
      ======================================================= */
 
   function resetAnimationValues() {
@@ -616,29 +622,112 @@
 
     if (animationNationality) {
       animationNationality.textContent =
-        "FC CLASSE";
+        "BEL AIR FC";
     }
 
-    if (animationText) {
-      animationText.textContent =
-        "Le joueur arrive...";
+    setAnimationText(
+      "Le pack s'ouvre..."
+    );
+  }
+
+
+  /* =======================================================
+     PRÉCHARGEMENT IMAGE
+     ======================================================= */
+
+  function preloadPlayerImage(
+    player
+  ) {
+    if (!player?.image) {
+      return;
+    }
+
+    const image =
+      new Image();
+
+    image.src =
+      player.image;
+  }
+
+
+  /* =======================================================
+     ATTENDRE GOOGLE SANS BLOQUER L'ANIMATION
+     ======================================================= */
+
+  async function waitForOpeningResult(
+    serverPromise
+  ) {
+    /*
+     * Pendant que Google Apps Script
+     * fait le vrai tirage sécurisé,
+     * l'élève voit déjà l'animation.
+     */
+
+    const trackedPromise =
+      serverPromise.then(
+        result => ({
+          ok: true,
+          result: result
+        }),
+        error => ({
+          ok: false,
+          error: error
+        })
+      );
+
+    const messages = [
+      "Le pack s'ouvre...",
+      "Un joueur arrive...",
+      "Préparation de la carte...",
+      "Le stade s'illumine...",
+      "Encore un instant..."
+    ];
+
+    let messageIndex = 0;
+
+    while (true) {
+      const outcome =
+        await Promise.race([
+          trackedPromise,
+
+          sleep(420).then(
+            () => null
+          )
+        ]);
+
+      if (outcome) {
+        if (!outcome.ok) {
+          throw outcome.error;
+        }
+
+        preloadPlayerImage(
+          outcome.result?.player
+        );
+
+        return outcome.result;
+      }
+
+      setAnimationText(
+        messages[
+          messageIndex %
+          messages.length
+        ]
+      );
+
+      messageIndex++;
     }
   }
 
 
   /* =======================================================
-     ANIMATION DE RÉVÉLATION
+     RÉVÉLATION RAPIDE
      ======================================================= */
 
-  async function runOpeningAnimation(player) {
+  async function runOpeningAnimation(
+    player
+  ) {
     const reducedMotion =
       prefersReducedMotion();
-
-    resetAnimationValues();
-
-    showAnimation();
-
-    triggerFlash();
 
     if (reducedMotion) {
       if (animationRating) {
@@ -654,99 +743,84 @@
       if (animationNationality) {
         animationNationality.textContent =
           player.nationality ||
-          "FC CLASSE";
+          "BEL AIR FC";
       }
 
-      await sleep(500);
+      await sleep(250);
 
       return;
     }
 
 
-    /* -----------------------------------------------------
-       Phase 1 : entrée
-       ----------------------------------------------------- */
+    /* NOTE */
 
-    if (animationText) {
-      animationText.textContent =
-        "Le joueur arrive...";
-    }
-
-    await sleep(800);
-
-
-    /* -----------------------------------------------------
-       Phase 2 : note
-       ----------------------------------------------------- */
+    setAnimationText(
+      "La note..."
+    );
 
     if (animationRating) {
       animationRating.textContent =
         player.rating || "?";
     }
 
-    if (animationText) {
-      animationText.textContent =
-        "La note...";
-    }
+    triggerFlash();
 
-    await sleep(850);
+    await sleep(450);
 
 
-    /* -----------------------------------------------------
-       Phase 3 : poste
-       ----------------------------------------------------- */
+    /* POSTE */
+
+    setAnimationText(
+      "Le poste..."
+    );
 
     if (animationPosition) {
       animationPosition.textContent =
         player.position || "?";
     }
 
-    if (animationText) {
-      animationText.textContent =
-        "Le poste...";
-    }
-
-    await sleep(850);
+    await sleep(450);
 
 
-    /* -----------------------------------------------------
-       Phase 4 : nationalité
-       ----------------------------------------------------- */
+    /* NATIONALITÉ */
+
+    setAnimationText(
+      "Dernier indice..."
+    );
 
     if (animationNationality) {
       animationNationality.textContent =
         player.nationality ||
-        "FC CLASSE";
+        "BEL AIR FC";
     }
 
-    if (animationText) {
-      animationText.textContent =
-        "Dernier indice...";
-    }
-
-    await sleep(950);
+    await sleep(500);
 
 
-    /* -----------------------------------------------------
-       Phase finale
-       ----------------------------------------------------- */
+    /* FINAL */
+
+    setAnimationText(
+      "C'est parti !"
+    );
 
     triggerFlash();
 
-    await sleep(450);
+    await sleep(250);
   }
 
 
   /* =======================================================
-     CARTE RÉVÉLÉE
+     RÉVÉLATION CARTE
      ======================================================= */
 
-  function renderRevealedPlayer(result) {
+  function renderRevealedPlayer(
+    result
+  ) {
     const player =
-      result.player || {};
+      result?.player || {};
 
     const student =
-      result.student || {};
+      result?.student || {};
 
     if (revealedRating) {
       revealedRating.textContent =
@@ -758,8 +832,7 @@
 
     if (revealedPosition) {
       revealedPosition.textContent =
-        player.position ||
-        "-";
+        player.position || "-";
     }
 
     if (revealedName) {
@@ -788,20 +861,18 @@
     }
 
 
-    /* -----------------------------------------------------
-       IMAGE
-       ----------------------------------------------------- */
+    /* IMAGE */
 
     if (revealedImage) {
-      revealedImage.hidden =
-        !player.image;
-
       revealedImage.src =
         player.image || "";
 
       revealedImage.alt =
         player.name ||
         "Joueur";
+
+      revealedImage.hidden =
+        !player.image;
 
       revealedImage.onerror =
         () => {
@@ -816,7 +887,7 @@
               getInitials(
                 player.name
               ) ||
-              "FC";
+              "BA";
           }
         };
 
@@ -825,13 +896,22 @@
           revealedFallback.hidden =
             true;
         }
+      } else {
+        if (revealedFallback) {
+          revealedFallback.hidden =
+            false;
+
+          revealedFallback.textContent =
+            getInitials(
+              player.name
+            ) ||
+            "BA";
+        }
       }
     }
 
 
-    /* -----------------------------------------------------
-       LIEN COLLECTION
-       ----------------------------------------------------- */
+    /* COLLECTION */
 
     if (viewCollectionButton) {
       const route =
@@ -845,13 +925,12 @@
     }
 
 
-    /* -----------------------------------------------------
-       OPENING SUIVANT
-       ----------------------------------------------------- */
+    /* AUTRE OPENING */
 
     const remaining =
       safeNumber(
-        result.openings?.available
+        result?.openings?.available ??
+        result?.stats?.available
       );
 
     if (openAnotherButton) {
@@ -866,14 +945,6 @@
       }
     }
 
-    /*
-     * Si un autre opening est disponible,
-     * le bouton principal devient
-     * "Ouvrir le suivant".
-     *
-     * Le retour prof reste disponible.
-     */
-
     if (backTeacherButton) {
       backTeacherButton.hidden =
         false;
@@ -882,7 +953,52 @@
 
 
   /* =======================================================
-     TIRAGE RÉEL
+     MISE À JOUR LOCALE APRÈS OPENING
+     ======================================================= */
+
+  function updateContextAfterOpening(
+    result
+  ) {
+    if (!openingContext) {
+      openingContext = {};
+    }
+
+    if (result?.student) {
+      openingContext.student =
+        result.student;
+    }
+
+    if (result?.openings) {
+      openingContext.openings =
+        result.openings;
+
+      openingContext.stats =
+        result.openings;
+    }
+
+    /*
+     * Pas besoin de demander à Google
+     * combien de joueurs restent.
+     * Un opening = un joueur en moins.
+     */
+
+    if (
+      openingContext.availablePlayers !==
+      undefined
+    ) {
+      openingContext.availablePlayers =
+        Math.max(
+          0,
+          safeNumber(
+            openingContext.availablePlayers
+          ) - 1
+        );
+    }
+  }
+
+
+  /* =======================================================
+     TIRAGE
      ======================================================= */
 
   async function performOpening() {
@@ -896,6 +1012,9 @@
 
     isOpening = true;
 
+    openingResult =
+      null;
+
     if (packButton) {
       packButton.disabled =
         true;
@@ -905,52 +1024,60 @@
       );
     }
 
-    document.body.classList.add(
-      "is-opening"
-    );
+
+    /*
+     * IMPORTANT :
+     *
+     * On lance la requête Google ET
+     * l'animation exactement au même moment.
+     *
+     * L'utilisateur ne regarde donc plus
+     * un bouton figé pendant que Google charge.
+     */
+
+    const serverPromise =
+      api.performOpening(
+        teacherToken,
+        studentId,
+        packType
+      );
+
+
+    resetAnimationValues();
+
+    showAnimation();
+
+    triggerFlash();
+
 
     try {
       /*
-       * LE TIRAGE A LIEU ICI.
-       *
-       * En version finale, cette fonction
-       * appellera Google Apps Script.
-       *
-       * C'est le serveur qui devra :
-       *
-       * 1. vérifier la session prof,
-       * 2. vérifier l'opening disponible,
-       * 3. verrouiller le tirage,
-       * 4. choisir un joueur encore libre,
-       * 5. attribuer ce joueur,
-       * 6. enregistrer l'opening.
+       * Google travaille pendant
+       * l'introduction visuelle.
        */
 
       const result =
-        await api.performOpening(
-          teacherToken,
-          studentId,
-          packType
+        await waitForOpeningResult(
+          serverPromise
         );
 
       openingResult =
         result;
 
+      updateContextAfterOpening(
+        result
+      );
+
+
       /*
-       * On laisse le pack commencer
-       * son animation avant de passer
-       * au tunnel.
+       * Maintenant que le joueur est connu,
+       * on révèle rapidement ses informations.
        */
 
-      if (
-        !prefersReducedMotion()
-      ) {
-        await sleep(600);
-      }
-
       await runOpeningAnimation(
-        result.player
+        result.player || {}
       );
+
 
       renderRevealedPlayer(
         result
@@ -984,17 +1111,11 @@
   }
 
 
-  packButton?.addEventListener(
-    "click",
-    performOpening
-  );
-
-
   /* =======================================================
-     OUVRIR LE PACK SUIVANT
+     PACK SUIVANT
      ======================================================= */
 
-  async function prepareAnotherOpening() {
+  function prepareAnotherOpening() {
     if (
       isOpening ||
       !openingResult
@@ -1004,7 +1125,9 @@
 
     const remaining =
       safeNumber(
-        openingResult.openings
+        openingResult?.openings
+          ?.available ??
+        openingResult?.stats
           ?.available
       );
 
@@ -1012,24 +1135,36 @@
       return;
     }
 
+    /*
+     * Ancienne version :
+     * redemandait getOpeningContext()
+     * à Google.
+     *
+     * Nouvelle version :
+     * tout est déjà connu localement.
+     */
+
     openingResult =
       null;
 
     resetAnimationValues();
 
-    /*
-     * On redemande le contexte à l'API.
-     *
-     * Cela permet de recalculer :
-     * - openings disponibles
-     * - joueurs encore disponibles
-     *
-     * et évite de travailler avec
-     * des données dépassées.
-     */
+    renderOpeningContext(
+      openingContext
+    );
 
-    await loadOpeningContext();
+    showReady();
   }
+
+
+  /* =======================================================
+     EVENTS
+     ======================================================= */
+
+  packButton?.addEventListener(
+    "click",
+    performOpening
+  );
 
 
   openAnotherButton?.addEventListener(
@@ -1039,27 +1174,20 @@
 
 
   /* =======================================================
-     PROTECTION CONTRE DOUBLE CLIC
+     PROTECTION FERMETURE
      ======================================================= */
 
   window.addEventListener(
     "beforeunload",
     event => {
-      /*
-       * En mode démo, on ne bloque pas vraiment
-       * la fermeture.
-       *
-       * Le tirage est déjà sauvegardé dès que
-       * performOpening() a répondu.
-       */
-
       if (!isOpening) {
         return;
       }
 
       event.preventDefault();
 
-      event.returnValue = "";
+      event.returnValue =
+        "";
     }
   );
 
@@ -1087,4 +1215,5 @@
 
 
   init();
+
 })();
